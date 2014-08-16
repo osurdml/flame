@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal
 import osgeo.gdal
 
-TIME_STEP = 0.1
+TIME_STEP = 0.05
 
 class Fire(object):
     def __init__(self, toa_file, fli_file):
