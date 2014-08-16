@@ -53,7 +53,7 @@ def run():
 
     simulation_time = 0
     while True:
-        clock.tick(60)
+        # clock.tick(100)
 
         for entity in entities:
             entity.update(simulation_time)
