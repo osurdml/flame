@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import scipy.signal
 import osgeo.gdal
 
 TIME_STEP = 0.1
@@ -15,6 +16,14 @@ class Fire(object):
 
     def shape(self):
         return self.time_of_arrival.shape
+
+    def extract_frontier(self):
+        # Find pixels that have at least one fire pixel bordering them, but are
+        # not entirely surrounded
+        frontier = self.fire_progression > 0
+        frontier = scipy.signal.convolve2d(frontier, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same')
+        frontier = np.logical_and(frontier < 8, frontier > 0)
+        return np.asarray(frontier.nonzero())
 
     def update(self, simulation_time):
         self.fire_progression = np.where(self.time_of_arrival <= simulation_time,
@@ -58,6 +67,10 @@ def run():
         for entity in entities:
             entity.update(simulation_time)
             entity.draw(screen)
+
+        frontier = fire.extract_frontier()
+        for i in range(0, frontier.shape[1]):
+            pygame.draw.rect(screen, (0, 255, 0), (frontier[0,i], frontier[1,i], 2, 2))
 
         simulation_time += TIME_STEP
 
