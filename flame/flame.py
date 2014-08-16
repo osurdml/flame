@@ -26,10 +26,30 @@ class Fire(object):
 
         screen.blit(surface, (0, 0))
 
+class Vehicle(object):
+    VEHICLE_SPEED = 10 # pixels / sec
+
+    def __init__(self):
+        self.location = np.array([50.0, 50.0])
+
+    def int_location(self):
+        return (int(round(self.location[0])), int(round(self.location[1])))
+
+    def update(self, simulation_time):
+        self.location += self.VEHICLE_SPEED * TIME_STEP
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, (255, 0, 0), self.int_location(), 3)
+
 def run():
     pygame.init()
+    pygame.display.set_caption("Flame: Fire Simulator")
 
     fire = Fire("data/ash1_raster.toa", "data/ash1_raster.fli")
+    entities = [
+        fire,
+        Vehicle()
+    ]
 
     screen = pygame.display.set_mode(fire.shape())
     clock = pygame.time.Clock()
@@ -38,8 +58,9 @@ def run():
     while True:
         clock.tick(60)
 
-        fire.update(simulation_time)
-        fire.draw(screen)
+        for entity in entities:
+            entity.update(simulation_time)
+            entity.draw(screen)
 
         simulation_time += TIME_STEP
 
