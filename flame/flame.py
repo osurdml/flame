@@ -69,8 +69,8 @@ def run():
             entity.draw(screen)
 
         frontier = fire.extract_frontier()
-        for i in range(0, frontier.shape[1]):
-            pygame.draw.rect(screen, (0, 255, 0), (frontier[0,i], frontier[1,i], 2, 2))
+        for (x, y) in frontier.T:
+            pygame.draw.rect(screen, (0, 255, 0), (x, y, 2, 2))
 
         simulation_time += TIME_STEP
 
