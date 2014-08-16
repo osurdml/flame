@@ -32,14 +32,11 @@ class Vehicle(object):
     def __init__(self):
         self.location = np.array([50.0, 50.0])
 
-    def int_location(self):
-        return (int(round(self.location[0])), int(round(self.location[1])))
-
     def update(self, simulation_time):
         self.location += self.VEHICLE_SPEED * TIME_STEP
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0), self.int_location(), 3)
+        pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)
 
 def run():
     pygame.init()
