@@ -1,0 +1,8 @@
+#!/usr/bin/python2
+
+import os, sys
+
+sys.path.insert(0, os.path.abspath(os.getcwd()))
+
+import flame
+flame.run()
