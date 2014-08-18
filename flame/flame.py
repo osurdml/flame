@@ -29,12 +29,15 @@ class Fire(object):
     def extract_frontier(self):
         # Find pixels that have at least one fire pixel bordering them, but are
         # not entirely surrounded
-        frontier = self.fire_progression > 0
-        frontier = scipy.signal.convolve2d(frontier, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], mode='same')
-        frontier = np.logical_and(frontier < 8, frontier > 0).nonzero()
+        frontier = (self.fire_progression > 0).astype(np.uint8)
+
+        # Fast convolve2d
+        convolve_row = frontier[1:-1,:] + frontier[:-2,:] + frontier[2:,:]
+        convolve_col = convolve_row[:,1:-1] + convolve_row[:,:-2] + convolve_row[:,2:]
+
+        frontier = np.logical_and(convolve_col < 8, convolve_col > 0).nonzero()
 
         return frontier
-
 
     def extract_clusters(self):
         # Copy the frontier to a full matrix so we can compare it with the
