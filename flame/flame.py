@@ -66,13 +66,41 @@ class Fire(object):
         screen.blit(surface, (0, 0))
 
 class Vehicle(object):
-    VEHICLE_SPEED = 10 # pixels / sec
+    VEHICLE_SPEED = 20 # pixels / sec
 
-    def __init__(self):
+    def __init__(self, fire):
+        self.fire = fire
         self.location = np.array([50.0, 50.0])
 
     def update(self, simulation_time):
-        self.location += self.VEHICLE_SPEED * TIME_STEP
+        if self.fire.frontier[0].size > 0:
+            # Loop so we have per-pixel accuracy, rather than moving
+            # VEHICLE_SPEED pixels per simulation tick. This would cause
+            # oscillations in and out of the desired distance from the fire
+            # line.
+            for _ in range(0, self.VEHICLE_SPEED):
+                # Find the nearest point on the fire frontier
+                (xs, ys) = self.fire.frontier
+                dists = (xs - self.location[0]) ** 2 + (ys - self.location[1]) ** 2
+                nearest = np.argmin(dists)
+
+                # Draw a vector to that point
+                vec_to_nearest = np.array([xs[nearest] - self.location[0], ys[nearest] - self.location[1]])
+                dist_to_nearest = np.linalg.norm(vec_to_nearest)
+                vec_to_nearest = vec_to_nearest / dist_to_nearest
+
+                # Travel towards the fire, away from it, or along it depending
+                # on how far the vehicle is from the fire line.
+                travel_vec = None
+                if dist_to_nearest > 15:
+                    travel_vec = vec_to_nearest
+                elif dist_to_nearest < 11:
+                    travel_vec = -vec_to_nearest
+                else:
+                    travel_vec = np.array([-vec_to_nearest[1], vec_to_nearest[0]])
+
+                # Normalize the vector to 1 pixel then scale it by the TIME_STEP
+                self.location += TIME_STEP * travel_vec / np.linalg.norm(travel_vec)
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)
@@ -84,7 +112,7 @@ def run():
     fire = Fire("data/ash1_raster.toa", "data/ash1_raster.fli")
     entities = [
         fire,
-        Vehicle()
+        Vehicle(fire)
     ]
 
     screen = pygame.display.set_mode(fire.shape(), pygame.HWSURFACE | pygame.DOUBLEBUF)
