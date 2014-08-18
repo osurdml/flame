@@ -5,6 +5,9 @@ import numpy as np
 import scipy.signal
 import sklearn.cluster
 
+# How many simulated time steps to run the simulation for
+TIME_TO_RUN = 50
+
 # The rate at which to step through the simulation
 TIME_STEP = 0.05
 
@@ -119,7 +122,7 @@ def run():
     clock = pygame.time.Clock()
 
     simulation_time = 0
-    while True:
+    while simulation_time < TIME_TO_RUN:
         # clock.tick(100)
 
         for entity in entities:
