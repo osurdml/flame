@@ -71,42 +71,81 @@ class Fire(object):
 
         screen.blit(surface, (0, 0))
 
-class Vehicle(object):
-    VEHICLE_SPEED = 20 # pixels / sec
+class BasePlanner(object):
+    DIRECTION_CW = 1
+    DIRECTION_CCW = 2
 
     def __init__(self, fire):
         self.fire = fire
+        self.direction = self.DIRECTION_CW
+
+    def set_location(self, location):
+        self.location = location
+
+    def plan(self, simulation_time):
+        if self.fire.frontier[0].size > 0:
+            # Find the nearest point on the fire frontier
+            (xs, ys) = self.fire.frontier
+            dists = (xs - self.location[0]) ** 2 + (ys - self.location[1]) ** 2
+            nearest = np.argmin(dists)
+
+            # Draw a vector to that point
+            vec_to_nearest = np.array([xs[nearest] - self.location[0], ys[nearest] - self.location[1]])
+            dist_to_nearest = np.linalg.norm(vec_to_nearest)
+            vec_to_nearest = vec_to_nearest / dist_to_nearest
+
+            # Travel towards the fire, away from it, or along it depending
+            # on how far the vehicle is from the fire line.
+            travel_vec = None
+            if dist_to_nearest > 15:
+                travel_vec = vec_to_nearest
+            elif dist_to_nearest < 11:
+                travel_vec = -vec_to_nearest
+            else:
+                travel_vec = np.array([-vec_to_nearest[1], vec_to_nearest[0]])
+
+                if self.direction == self.DIRECTION_CW:
+                    travel_vec = -travel_vec
+
+            return travel_vec
+
+        return None
+
+class HotspotPlanner(object):
+    def __init__(self, fire):
+        self.sub_planner = BasePlanner(fire)
+
+    def set_location(self, location):
+        self.location = location
+        self.sub_planner.set_location(location)
+
+    def plan(self, simulation_time):
+        if int(simulation_time) % 3:
+            self.sub_planner.direction = BasePlanner.DIRECTION_CW
+        else:
+            self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+
+        return self.sub_planner.plan(simulation_time)
+
+class Vehicle(object):
+    VEHICLE_SPEED = 200 # pixels / sec
+
+    def __init__(self, planner):
+        self.planner = planner
         self.location = np.array([50.0, 50.0])
 
     def update(self, simulation_time):
-        if self.fire.frontier[0].size > 0:
-            # Loop so we have per-pixel accuracy, rather than moving
-            # VEHICLE_SPEED pixels per simulation tick. This would cause
-            # oscillations in and out of the desired distance from the fire
-            # line.
-            for _ in range(0, self.VEHICLE_SPEED):
-                # Find the nearest point on the fire frontier
-                (xs, ys) = self.fire.frontier
-                dists = (xs - self.location[0]) ** 2 + (ys - self.location[1]) ** 2
-                nearest = np.argmin(dists)
+        # Loop so we have per-pixel accuracy, rather than moving
+        # VEHICLE_SPEED pixels per simulation tick. This would cause
+        # oscillations in and out of the desired distance from the fire
+        # line.
+        for _ in range(0, self.VEHICLE_SPEED):
+            self.planner.set_location(self.location)
+            plan = self.planner.plan(simulation_time)
 
-                # Draw a vector to that point
-                vec_to_nearest = np.array([xs[nearest] - self.location[0], ys[nearest] - self.location[1]])
-                dist_to_nearest = np.linalg.norm(vec_to_nearest)
-                vec_to_nearest = vec_to_nearest / dist_to_nearest
-
-                # Travel towards the fire, away from it, or along it depending
-                # on how far the vehicle is from the fire line.
-                travel_vec = None
-                if dist_to_nearest > 15:
-                    travel_vec = vec_to_nearest
-                elif dist_to_nearest < 11:
-                    travel_vec = -vec_to_nearest
-                else:
-                    travel_vec = np.array([-vec_to_nearest[1], vec_to_nearest[0]])
-
-                # Normalize the vector to 1 pixel then scale it by the TIME_STEP
-                self.location += TIME_STEP * travel_vec / np.linalg.norm(travel_vec)
+            if plan is not None:
+                # Vector is normalized, scale it by the TIME_STEP
+                self.location += TIME_STEP * plan
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)
@@ -116,9 +155,11 @@ def run():
     pygame.display.set_caption("Flame: Fire Simulator")
 
     fire = Fire("data/ash1_raster.toa", "data/ash1_raster.fli")
+    planner = HotspotPlanner(fire)
+
     entities = [
         fire,
-        Vehicle(fire)
+        Vehicle(planner)
     ]
 
     screen = pygame.display.set_mode(fire.shape(), pygame.HWSURFACE | pygame.DOUBLEBUF)
