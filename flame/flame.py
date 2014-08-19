@@ -6,7 +6,7 @@ import scipy.signal
 import sklearn.cluster
 
 # How many simulated time steps to run the simulation for
-TIME_TO_RUN = 50
+TIME_TO_RUN = 20
 
 # The rate at which to step through the simulation
 TIME_STEP = 0.05
@@ -52,11 +52,12 @@ class Fire(object):
         hotspots = np.asarray(np.nonzero(hotspots)).T
 
         if hotspots.shape[0] > 2:
-            kmeans = sklearn.cluster.KMeans(n_clusters=2)
+	    k= int(np.sqrt(hotspots.shape[0]/2))
+            kmeans = sklearn.cluster.KMeans(n_clusters=k)
             kmeans.fit(hotspots)
 
             return kmeans.cluster_centers_
-
+	
         return np.empty((0, 2))
 
     def update(self, simulation_time):
@@ -132,7 +133,7 @@ class Vehicle(object):
 
     def __init__(self, planner):
         self.planner = planner
-        self.location = np.array([50.0, 50.0])
+        self.location = np.array([100.0, 100.0])
 
     def update(self, simulation_time):
         # Loop so we have per-pixel accuracy, rather than moving
