@@ -80,8 +80,13 @@ class BasePlanner(object):
         self.fire = fire
         self.direction = self.DIRECTION_CW
 
-    def set_location(self, location):
-        self.location = location
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, location):
+        self._location = location
 
     def plan(self, simulation_time):
         if self.fire.frontier[0].size > 0:
@@ -116,9 +121,14 @@ class HotspotPlanner(object):
     def __init__(self, fire):
         self.sub_planner = BasePlanner(fire)
 
-    def set_location(self, location):
-        self.location = location
-        self.sub_planner.set_location(location)
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, location):
+        self._location = location
+        self.sub_planner.location = location
 
     def plan(self, simulation_time):
         if int(simulation_time) % 3:
@@ -141,7 +151,7 @@ class Vehicle(object):
         # oscillations in and out of the desired distance from the fire
         # line.
         for _ in range(0, self.VEHICLE_SPEED):
-            self.planner.set_location(self.location)
+            self.planner.location = self.location
             plan = self.planner.plan(simulation_time)
 
             if plan is not None:
