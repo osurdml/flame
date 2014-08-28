@@ -9,7 +9,7 @@ import sklearn.cluster
 TIME_TO_RUN = 20
 
 # The rate at which to step through the simulation
-TIME_STEP = 0.05
+TIME_STEP = 0.005
 
 class Fire(object):
     # Minimum normalized value for a point to be considered a hotspot
@@ -53,10 +53,10 @@ class Fire(object):
 
         if hotspots.shape[0] > 2:
 	    k= int(np.sqrt(hotspots.shape[0]/2))
-            kmeans = sklearn.cluster.KMeans(n_clusters=k)
-            kmeans.fit(hotspots)
+            self.kmeans = sklearn.cluster.KMeans(n_clusters=k)
+            self.kmeans.fit(hotspots)
 
-            return kmeans.cluster_centers_
+            return self.kmeans.cluster_centers_
 	
         return np.empty((0, 2))
 
@@ -115,18 +115,46 @@ class BasePlanner(object):
 class HotspotPlanner(object):
     def __init__(self, fire):
         self.sub_planner = BasePlanner(fire)
+        self.fire = fire
 
     def set_location(self, location):
         self.location = location
         self.sub_planner.set_location(location)
 
     def plan(self, simulation_time):
-        if int(simulation_time) % 3:
-            self.sub_planner.direction = BasePlanner.DIRECTION_CW
-        else:
-            self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+        if self.fire.clusters.any():
+            test = HotspotTracker(self.fire)
+            test.set_location(self.location)
+            test.update()
+            nearest = np.argmin(test.hs_dists)
 
+            # Draw a vector to that point
+            vec_to_nearest = np.array([test.xs[nearest] - self.location[0],
+                test.ys[nearest] - self.location[1]])
+            dist_to_nearest = np.linalg.norm(vec_to_nearest)
+            vec_to_nearest = vec_to_nearest / dist_to_nearest
+
+        else:
+                self.sub_planner.direction = BasePlanner.DIRECTION_CCW
         return self.sub_planner.plan(simulation_time)
+
+class HotspotTracker(object):
+    def __init__(self, fire):
+        self.fire = fire
+        self.hs_dists = None
+        self.xs = None
+        self.ys = None
+    def set_location(self, location):
+        self.location = location
+
+    def update(self):
+        if self.fire.clusters.any():
+            #print self.fire.clusters
+            (self.xs, self.ys) = self.fire.clusters.T
+            self.hs_dists = (self.xs - self.location[0]) ** 2 + (self.ys - self.location[1]) ** 2
+            #print hs_dists
+            return self.hs_dists, self.xs, self.ys
+        
 
 class Vehicle(object):
     VEHICLE_SPEED = 200 # pixels / sec
