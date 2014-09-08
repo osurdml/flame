@@ -32,16 +32,21 @@ class Fire(object):
 
         return frontier
 
-    def extract_clusters(self):
+    def extract_frontier_map(self):
         # Copy the frontier to a full matrix so we can compare it with the
         # hotspots
-        frontier_mask = np.zeros_like(self.fire_progression)
-        frontier_mask[self.frontier] = 1
+        self.frontier_mask = np.zeros_like(self.fire_progression)
+        self.frontier_mask[self.frontier] = 1
+        
+        return self.frontier_mask
 
+
+    def extract_clusters(self):
+ 
         hotspots = np.where(self.fire_progression > self.HOTSPOT_MIN,
                 np.ones_like(self.fire_progression),
                 np.zeros_like(self.fire_progression))
-        hotspots = np.logical_and(hotspots, frontier_mask)
+        hotspots = np.logical_and(hotspots, self.frontier_mask)
         hotspots = np.asarray(np.nonzero(hotspots)).T
 
         if hotspots.shape[0] > 2:
@@ -57,6 +62,7 @@ class Fire(object):
         self.fire_progression = np.where(self.time_of_arrival <= simulation_time,
                 self.fire_intensity, np.zeros_like(self.fire_intensity))
         self.frontier = self.extract_frontier()
+        self.frontier_map= self.extract_frontier_map()
         self.clusters = self.extract_clusters()
 
     def draw(self, screen):

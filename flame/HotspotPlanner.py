@@ -32,9 +32,14 @@ class HotspotPlanner(object):
             
 
             self.sub_planner.direction = BasePlanner.DIRECTION_CW
-            graph= self.fire.frontier
-            AStar(self, graph, self.location, self.fire.clusters.centers)
+            obstacle_map= np.where(self.fire.frontier_map<1,
+                    self.fire.frontier_map,
+                    1)
 
+            
+            path=AStar(obstacle_map, 4, int(self.location[0]), int(self.location[1]), int(self.fire.clusters[0][0]), int(self.fire.clusters[0][1]))
+
+            #print path
         else:
             self.sub_planner.direction = BasePlanner.DIRECTION_CCW
         return self.sub_planner.plan(simulation_time)
