@@ -12,6 +12,13 @@ class HotspotTracker(object):
             #print self.fire.clusters
             (self.xs, self.ys) = self.fire.clusters.T
             self.hs_dists = (self.xs - self.location[0]) ** 2 + (self.ys - self.location[1]) ** 2
+
+
+            #self.hs_dists = (self.xs - previous_hs.location[0]) ** 2 + (self.y - previous.location[1]) ** 2
+
+
+            #previous_hs= self.fire.clusters.T
+
             #print hs_dists
             return self.hs_dists, self.xs, self.ys 
 

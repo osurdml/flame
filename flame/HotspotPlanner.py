@@ -1,6 +1,7 @@
 from BasePlanner import BasePlanner
 from HotspotTracker import HotspotTracker
 import numpy as np
+from AStar import AStar
 
 class HotspotPlanner(object):
     def __init__(self, fire):
@@ -28,10 +29,14 @@ class HotspotPlanner(object):
                 test.ys[nearest] - self.location[1]])
             dist_to_nearest = np.linalg.norm(vec_to_nearest)
             vec_to_nearest = vec_to_nearest / dist_to_nearest
+            
+
             self.sub_planner.direction = BasePlanner.DIRECTION_CW
+            graph= self.fire.frontier
+            AStar(self, graph, self.location, self.fire.clusters.centers)
 
         else:
-                self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+            self.sub_planner.direction = BasePlanner.DIRECTION_CCW
         return self.sub_planner.plan(simulation_time)
 
 
