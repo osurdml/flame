@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
-from Config import Config
+
+import config
 
 class Vehicle(object):
     VEHICLE_SPEED = 200 # pixels / sec
@@ -20,7 +21,7 @@ class Vehicle(object):
 
             if plan is not None:
                 # Vector is normalized, scale it by the TIME_STEP
-                self.location += Config.TIME_STEP * plan
+                self.location += config.TIME_STEP * plan
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)

@@ -1,7 +1,8 @@
-from BasePlanner import BasePlanner
-from HotspotTracker import HotspotTracker
 import numpy as np
-from AStar import AStar
+
+from astar import AStar
+from base_planner import BasePlanner
+from hotspot_tracker import HotspotTracker
 
 class HotspotPlanner(object):
     def __init__(self, fire):
@@ -42,6 +43,7 @@ class HotspotPlanner(object):
             #print path
         else:
             self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+
         return self.sub_planner.plan(simulation_time)
 
 

@@ -1,15 +1,13 @@
 import pygame
 import numpy as np
 import scipy.signal
-from Fire import Fire
-from HotspotPlanner import HotspotPlanner
-from HotspotTracker import HotspotTracker
-from Vehicle import Vehicle
-from BasePlanner import BasePlanner
-from Config import Config
 
-
-cfg= Config()
+import config
+from fire import Fire
+from hotspot_planner import HotspotPlanner
+from hotspot_tracker import HotspotTracker
+from vehicle import Vehicle
+from base_planner import BasePlanner
 
 def run():
     pygame.init()
@@ -27,7 +25,7 @@ def run():
     clock = pygame.time.Clock()
 
     simulation_time = 0
-    while simulation_time < cfg.TIME_TO_RUN:
+    while simulation_time < config.TIME_TO_RUN:
         # clock.tick(100)
 
         for entity in entities:
@@ -49,6 +47,6 @@ def run():
                 pygame.draw.circle(cluster_surf, (255, 0, 0, 128), (x, y), 6)
         screen.blit(cluster_surf, (0, 0))
 
-        simulation_time += cfg.TIME_STEP
+        simulation_time += config.TIME_STEP
 
         pygame.display.flip()

@@ -3,7 +3,6 @@ import numpy as np
 import pygame
 import sklearn.cluster
 
-
 class Fire(object):
     # Minimum normalized value for a point to be considered a hotspot
     HOTSPOT_MIN = 0.6
@@ -40,9 +39,7 @@ class Fire(object):
         
         return self.frontier_mask
 
-
     def extract_clusters(self):
- 
         hotspots = np.where(self.fire_progression > self.HOTSPOT_MIN,
                 np.ones_like(self.fire_progression),
                 np.zeros_like(self.fire_progression))
