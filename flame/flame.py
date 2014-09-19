@@ -1,13 +1,10 @@
 import pygame
 import numpy as np
-import scipy.signal
 
 import config
 from fire import Fire
-from hotspot_planner import HotspotPlanner
-from hotspot_tracker import HotspotTracker
 from vehicle import Vehicle
-from base_planner import BasePlanner
+from planners.hotspot_planner import HotspotPlanner
 
 def run():
     pygame.init()

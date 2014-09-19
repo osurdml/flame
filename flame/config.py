@@ -4,3 +4,4 @@ TIME_TO_RUN = 20
 # The rate at which to step through the simulation
 TIME_STEP = 0.005
 
+VEHICLE_SPEED = 2

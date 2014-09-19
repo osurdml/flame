@@ -1,4 +1,7 @@
 import numpy as np
+
+from .. import config
+
 class BasePlanner(object):
     DIRECTION_CW = 1
     DIRECTION_CCW = 2
@@ -35,12 +38,12 @@ class BasePlanner(object):
             elif dist_to_nearest < 11:
                 travel_vec = -vec_to_nearest
             else:
-                travel_vec = np.array([-vec_to_nearest[1], vec_to_nearest[0]])
+                travel_vec = np.array([[-vec_to_nearest[1], vec_to_nearest[0]]])
 
                 if self.direction == self.DIRECTION_CW:
                     travel_vec = -travel_vec
 
-            return travel_vec
+            return np.tile(travel_vec, config.VEHICLE_SPEED).reshape((-1,2))
 
         return None
 

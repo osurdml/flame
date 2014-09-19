@@ -15,13 +15,14 @@ class Vehicle(object):
         # VEHICLE_SPEED pixels per simulation tick. This would cause
         # oscillations in and out of the desired distance from the fire
         # line.
-        for _ in range(0, self.VEHICLE_SPEED):
-            self.planner.location = self.location
-            plan = self.planner.plan(simulation_time)
+        self.planner.location = self.location
+        (plan, replan) = self.planner.plan(simulation_time)
 
-            if plan is not None:
-                # Vector is normalized, scale it by the TIME_STEP
-                self.location += config.TIME_STEP * plan
+        if plan is not None:
+            # Vector is normalized, scale it by the TIME_STEP
+
+            for step in plan[0:10]:
+                self.location += step # config.TIME_STEP * step
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)
