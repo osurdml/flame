@@ -1,10 +1,10 @@
 from math import sqrt
 from itertools import product
-
+import sys
 class AStar(object):
     def __init__(self, graph):
         self.graph = graph
-        
+
     def heuristic(self, node, start, end):
         raise NotImplementedError
         
@@ -13,6 +13,7 @@ class AStar(object):
         closedset = set()
         current = start
         openset.add(current)
+
         while openset:
             current = min(openset, key=lambda o:o.g + o.h)
             if current == end:
@@ -34,7 +35,7 @@ class AStar(object):
                         node.parent = current
                 else:
                     node.g = current.g + current.move_cost(node)
-                    node.h = self.heuristic(node, start, end)
+                    node.h = self.heuristic(node, start, end)*1.01
                     node.parent = current
                     openset.add(node)
         return None
@@ -61,7 +62,8 @@ class AStarGridNode(AStarNode):
     def move_cost(self, other):
         # diagonal = abs(self.x - other.x) == 1 and abs(self.y - other.y) == 1
         # return 14 if diagonal else 10
-        return self.cost
+        dist_cost = sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
+        return dist_cost + self.cost
 
 def make_graph(mapinfo):
     nodes = [[AStarGridNode(x, y, mapinfo[x,y]) for y in range(mapinfo.shape[1])] for x in range(mapinfo.shape[0])]

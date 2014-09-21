@@ -1,15 +1,14 @@
 import numpy as np
 import scipy.signal
-
 import astar
 from base_planner import BasePlanner
 
 class HotspotPlanner(object):
     def __init__(self, fire):
+        self.time_untracked = [0]
         self.sub_planner = BasePlanner(fire)
-        self.tracker = HotspotTracker(fire)
+        self.tracker = HotspotTracker(fire, self.time_untracked)
         self.fire = fire
-
     @property
     def location(self):
         return self._location
@@ -22,7 +21,7 @@ class HotspotPlanner(object):
     def plan(self, simulation_time):
         if self.fire.clusters.any():
             self.tracker.set_location(self.location)
-            self.tracker.update()
+            ds, xs, ys, self.time_untracked = self.tracker.update()
 
             nearest = np.argmin(self.tracker.hs_dists)
 
@@ -33,11 +32,15 @@ class HotspotPlanner(object):
             vec_to_nearest = vec_to_nearest / dist_to_nearest
 
             self.sub_planner.direction = BasePlanner.DIRECTION_CW
+
+            print "\n------------------------------\n"
+#            if self.time_untracked % 5 == 0:
+
             # TODO: Grow the obstacle map so the planner doesn't get stuck in an
             # expanding fire. This causes the path planner to stall.
-            # obstacle_map = scipy.signal.convolve2d(self.fire.fire_progression,
-            #         [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+            obstacle_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
             obstacle_map = np.where(self.fire.fire_progression, 1000, 1)
+
 
             graph, nodes = astar.make_graph(obstacle_map)
             paths = astar.AStarGrid(graph)
@@ -96,9 +99,9 @@ class HotspotPlanner(object):
         return (self.sub_planner.plan(simulation_time), True)
 
 class HotspotTracker(object):
-    def __init__(self, fire):
+    def __init__(self, fire, time_untracked):
         self.fire = fire
-
+        self.time_untracked = time_untracked
     def set_location(self, location):
         self.location = location
 
@@ -108,13 +111,18 @@ class HotspotTracker(object):
             (self.xs, self.ys) = self.fire.clusters.T
             self.hs_dists = (self.xs - self.location[0]) ** 2 + (self.ys - self.location[1]) ** 2
 
-
+            for i in range(len(self.fire.clusters)):
+                print i
+                if i>= len(self.time_untracked):
+                    self.time_untracked.append(0)
+                self.time_untracked[i] = self.time_untracked[i] + 1
+                print self.time_untracked
             #self.hs_dists = (self.xs - previous_hs.location[0]) ** 2 + (self.y - previous.location[1]) ** 2
 
 
             #previous_hs= self.fire.clusters.T
 
             #print hs_dists
-            return self.hs_dists, self.xs, self.ys 
+            return self.hs_dists, self.xs, self.ys, self.time_untracked 
 
 
