@@ -7,10 +7,10 @@ from .. import config
 class HotspotPlanner(object):
     def __init__(self, fire):
         self.time_untracked = [0]
-        self.max_untracked = 0
         self.sub_planner = BasePlanner(fire)
-        self.previous_hs = [[0, 0]]
-        self.tracker = HotspotTracker(fire, self.time_untracked, self.max_untracked, self.previous_hs)
+        self.previous_hs = {}
+        self.dead_hs = {}
+        self.tracker = HotspotTracker()
         self.fire = fire
     @property
     def location(self):
@@ -23,16 +23,29 @@ class HotspotPlanner(object):
 
     def plan(self, simulation_time):
         if self.fire.clusters.any():
-            self.tracker.set_location(self.location)
-            ds, xs, ys, self.time_untracked, self.max_untracked, self.previous_hs = self.tracker.update()
+            self.previous_hs, dead_hs = self.tracker.update(self.fire, self.previous_hs, self.location)
+            for h_id,h in dead_hs.items():
+                self.dead_hs[h_id] = h
+            print "Hotspots:"
+            for h_id,h in self.previous_hs.items():
+                print "%d: (%d, %d) dist %d, untracked for %d" % (h_id, h.location[0], h.location[1], h.dist, h.time)
+            print "Max untracked %d" % (self.tracker.max_untracked)
+            print "Dead hotspot IDs:", [h_id for h_id,h in self.dead_hs.items()]
 
-            nearest = np.argmin(self.tracker.hs_dists)
+            # Find nearest hotspot.
+            h_nearest = None
+            for h_id,h in self.previous_hs.items():
+                if h_nearest is None:
+                    h_nearest = h
+                else:
+                    if h.dist < h_nearest.dist:
+                        h_nearest = h
 
-            # Draw a vector to that point
-            vec_to_nearest = np.array([self.tracker.xs[nearest] - self.location[0],
-                                       self.tracker.ys[nearest] - self.location[1]])
-            dist_to_nearest = np.linalg.norm(vec_to_nearest)
-            vec_to_nearest = vec_to_nearest / dist_to_nearest
+            # Draw a vector to that hotspot.
+            vec_to_nearest = np.array([h_nearest.location[0] - self.location[0],
+                                       h_nearest.location[1] - self.location[1]])
+            dist_to_nearest = np.linalg.norm(vec_to_nearest)   # TODO(syoo): h_nearest.dist?
+            vec_to_nearest = vec_to_nearest / dist_to_nearest   # Normalize.
 
             self.sub_planner.direction = BasePlanner.DIRECTION_CW
 
@@ -98,79 +111,88 @@ class HotspotPlanner(object):
             print "test"
         return (self.sub_planner.plan(simulation_time), True)
 
+
 class Hotspot(object):
-    def __init__(self, x, y):
-        self.location = [x, y]
-        self.time_untracked = 0
+    def __init__(self, hotspot_loc, uav_loc):
+        self.update(hotspot_loc, uav_loc)
+        self._time_untracked = 0
+
+    @property
+    def location(self):
+        return self._location
+
+    @property
+    def time(self):
+        return self._time_untracked
+
+    @property
+    def dist(self):
+        return self._dist
+
+    def set_time(self, new_time):
+        self._time_untracked = new_time
+
+    def inc_time(self):
+        self._time_untracked += 1
+
+    def reset_time(self):
+        self._time_untracked = 0
+
+    def update(self, new_hs_loc, new_uav_loc):
+        self._location = new_hs_loc
+        self._dist = sqrt((self._location[0]-new_uav_loc[0])**2 + (self._location[1]-new_uav_loc[1])**2)
+
 
 class HotspotTracker(object):
-    def __init__(self, fire, time_untracked, max_untracked, previous_hs):
-        self.fire = fire
-        self.time_untracked = time_untracked
-        self.max_untracked = max_untracked
-        self.previous_hs = previous_hs
-        self.H = {}
-        self.id_next= 0
+    def __init__(self):
+        self._max_untracked = 0
+        self._id_next = 0
 
-    def set_location(self, location):
-        self.location = location
+    @property
+    def max_untracked(self):
+        return self._max_untracked
 
     def distance_calc(self, a, b):
         dist =  sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
         return dist
 
-    def find_old(self, nh, H):
-        ret = {}
-        for h,v in H:
-            print h
-            if self.distance_calc(nh, h) < 20:
-                ret.add(h)
-        if len(ret) < 2:
-            return ret.get(0)
+    def find_old(self, nh_loc, H):
+        maybe_hs = []
+        for h_id,h in H.items():
+            if self.distance_calc(nh_loc, h.location) < 20:
+                maybe_hs.append(h_id)
+        if len(maybe_hs) == 0:
+            return None
+        elif len(maybe_hs) == 1:
+            return maybe_hs[0]
+        else:
+            print "WARNING: More than one nearby old hotspot found. Choosing first one."
+            return maybe_hs[0]   # TODO(syoo): Maybe this shouldn't just choose the first one!
 
-    def update(self):
-        if self.fire.clusters.any():
-            (self.xs, self.ys) = self.fire.clusters.T
+    def update(self, fire, hs, uav_loc):
+        hs_new = {}
 
-            H = {}
-            H_tmp = {}
+        for h_loc in fire.clusters:
+            # Find ID of corresponding old hotspot, if any.
+            id_old = self.find_old(h_loc, hs)
 
-            for i in range(len(self.fire.clusters)):
-                oh = self.find_old(self.fire.clusters[i], self.previous_hs)
-                if oh is not None:
-                    H_tmp[oh] = H[oh]
-                else:
-                    new_hs = Hotspot(self.fire.clusters[i][0], self.fire.clusters[i][1])
-                    H_tmp[id_next] = new_hs
-                    id_next += 1
-                for oh in H:
-                    H_tmp[oh].time_untracked += 1
-                    if self.max_untracked < H_tmp[oh]:
-                        self.max_untracked = H_tmp[oh] 
-                    if distance_calc(self.fire.clusters[i], self.location) < 25:
-                        H_tmp[oh] = 0
-                H = H_tmp
-            self.hs_dists = (self.xs - self.location[0]) ** 2 + (self.ys - self.location[1])**2
+            if id_old is not None:
+                # Update old hotspot
+                hs[id_old].update(h_loc, uav_loc)
+                hs[id_old].inc_time()
 
-            # calculate distances between hotspot[i] and all previous
-            # hotspots[i]. If distance < setpoint then time_untracked[array location of
-            # previous hs] +=1 else append time_untracked =1
+                # Update max untracked time and reset if in view of UAV.
+                if hs[id_old].time > self._max_untracked:
+                    self._max_untracked = hs[id_old].time
+                if hs[id_old].dist < 25:
+                    hs[id_old].reset_time()
 
-           # for i in range(len(self.time_untracked)):
-           #     if i>= len(self.time_untracked):
-           #         self.time_untracked.append(0)
+                # Add hotspot to new list using old ID and remove from old list (so we don't add the same one twice).
+                hs_new[id_old] = hs[id_old]
+                del hs[id_old]
+            else:
+                # Add new Hotspot with new ID.
+                hs_new[self._id_next] = Hotspot(h_loc, uav_loc)
+                self._id_next += 1
 
-           #     dist = sqrt((self.fire.clusters[i][0] - self.location[0])**2 + (self.fire.clusters[i][1] - self.location[1])**2)
-           #     self.time_untracked[i] = self.time_untracked[i] + 1
-           #     if dist < 50:
-           #         self.time_untracked[i]= 0
-           #     print self.time_untracked
-
-           #     if self.max_untracked < self.time_untracked[i]:
-           #         self.max_untracked = self.time_untracked[i]
-           #         print self.max_untracked
-            #self.hs_dists = (self.xs - previous_hs.location[0]) ** 2 + (self.y - previous.location[1]) ** 2
-
-
-            self.previous_hs= self.fire.clusters
-            return self.hs_dists, self.xs, self.ys, self.time_untracked, self.max_untracked, self.previous_hs
+        return hs_new, hs   # hs is deadlist.
