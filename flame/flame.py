@@ -5,7 +5,7 @@ import config
 from fire import Fire
 from vehicle import Vehicle
 from planners.hotspot_planner import HotspotPlanner
-
+from planners.base_planner import BasePlanner
 def run():
     pygame.init()
     pygame.display.set_caption("Flame: Fire Simulator")

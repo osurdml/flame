@@ -1,7 +1,15 @@
 # How many simulated time steps to run the simulation for
 TIME_TO_RUN = 20
 
+#Planner
+
 # The rate at which to step through the simulation
 TIME_STEP = 0.005
 
 VEHICLE_SPEED = 2
+
+# UAV field of view
+FOV = 15
+
+# Radius to consider hotspots the same after each iteration
+HS_RADIUS = 20

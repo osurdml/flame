@@ -32,15 +32,21 @@ class HotspotPlanner(object):
             print "Max untracked %d" % (self.tracker.max_untracked)
             print "Dead hotspot IDs:", [h_id for h_id,h in self.dead_hs.items()]
 
-            # Find nearest hotspot.
+            # Find nearest hotspot. Find hotspot with max time untracked.
             h_nearest = None
+            h_maxtime = None
             for h_id,h in self.previous_hs.items():
                 if h_nearest is None:
                     h_nearest = h
                 else:
                     if h.dist < h_nearest.dist:
                         h_nearest = h
-
+                if h_maxtime is None:
+                    h_maxtime = h
+                else:
+                    if h.time > h_maxtime.time:
+                        h_maxtime = h
+            print "target hotspot location (%d, %d)" % (h_maxtime.location[0], h_maxtime.location[1])
             # Draw a vector to that hotspot.
             vec_to_nearest = np.array([h_nearest.location[0] - self.location[0],
                                        h_nearest.location[1] - self.location[1]])
@@ -60,7 +66,9 @@ class HotspotPlanner(object):
             #cost_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
             paths = astar.AStarGrid(graph)
             start = nodes[int(self.location[0])][int(self.location[1])]
-            end = nodes[int(self.fire.clusters[0][0])][int(self.fire.clusters[0][1])]
+
+            #insert algorithm here
+            end = nodes[int(h_maxtime.location[0])][int(h_maxtime.location[1])]
             path = paths.search(start, end)
             path_arr = []
             last_n = (int(self.location[0]), int(self.location[1]))
@@ -108,7 +116,6 @@ class HotspotPlanner(object):
 
         else:
             self.sub_planner.direction = BasePlanner.DIRECTION_CCW
-            print "test"
         return (self.sub_planner.plan(simulation_time), True)
 
 
@@ -159,7 +166,7 @@ class HotspotTracker(object):
     def find_old(self, nh_loc, H):
         maybe_hs = []
         for h_id,h in H.items():
-            if self.distance_calc(nh_loc, h.location) < 20:
+            if self.distance_calc(nh_loc, h.location) < config.HS_RADIUS:
                 maybe_hs.append(h_id)
         if len(maybe_hs) == 0:
             return None
@@ -184,7 +191,7 @@ class HotspotTracker(object):
                 # Update max untracked time and reset if in view of UAV.
                 if hs[id_old].time > self._max_untracked:
                     self._max_untracked = hs[id_old].time
-                if hs[id_old].dist < 25:
+                if hs[id_old].dist < config.FOV:
                     hs[id_old].reset_time()
 
                 # Add hotspot to new list using old ID and remove from old list (so we don't add the same one twice).
