@@ -42,11 +42,13 @@ class HotspotPlanner(object):
                     if h.dist < h_nearest.dist:
                         h_nearest = h
                 if h_maxtime is None:
+                    h_maxtime_id = h_id
                     h_maxtime = h
                 else:
                     if h.time > h_maxtime.time:
+                        h_maxtime_id = h_id
                         h_maxtime = h
-            print "target hotspot location (%d, %d)" % (h_maxtime.location[0], h_maxtime.location[1])
+            #print "target hotspot %d location (%d, %d)" % (h_maxtime_id, h_maxtime.location[0], h_maxtime.location[1])
             # Draw a vector to that hotspot.
             vec_to_nearest = np.array([h_nearest.location[0] - self.location[0],
                                        h_nearest.location[1] - self.location[1]])
@@ -55,28 +57,49 @@ class HotspotPlanner(object):
 
             self.sub_planner.direction = BasePlanner.DIRECTION_CW
 
-            print "\n------------------------------\n"
-#            if self.time_untracked % 5 == 0:
+           #            if self.time_untracked % 5 == 0:
 
             # TODO: Grow the obstacle map so the planner doesn't get stuck in an
             # expanding fire. This causes the path planner to stall.
             obstacle_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-            obstacle_map = np.where(self.fire.fire_progression, 1000, 1)
+            obstacle_map = np.where(self.fire.fire_progression, 10000, 1)
             graph, nodes = astar.make_graph(obstacle_map)
             #cost_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
             paths = astar.AStarGrid(graph)
             start = nodes[int(self.location[0])][int(self.location[1])]
 
+            alpha = .1
+            alg = None
+            lowest_alg = None
+            lowest_id = None
             #insert algorithm here
-            end = nodes[int(h_maxtime.location[0])][int(h_maxtime.location[1])]
-            path = paths.search(start, end)
+            for h_id,h in self.previous_hs.items():
+                end = nodes[int(h.location[0])][int(h.location[1])]
+                res = paths.search(start, end)
+                if res is not None:
+                    h.set_path(res[0], res[1])
+                    alg= -h.time + alpha *  h.path_cost
+                    if lowest_alg == None:
+                        lowest_alg = alg
+                        lowest_id = h_id
+                    else:
+                        if alg < lowest_alg:
+                            lowest_alg = alg
+                            lowest_id = h_id
+            #end = nodes[int(h_maxtime.location[0])][int(h_maxtime.location[1])]
+            #path = paths.search(start, end)
+
+            print "target h_id = %d" % lowest_id
+            print "path cost = %d" %self.previous_hs[lowest_id].path_cost
+            print "\n------------------------------\n"
+
             path_arr = []
             last_n = (int(self.location[0]), int(self.location[1]))
-            for n in path[1:]:
-                dx, dy = n.x - last_n[0], n.y - last_n[1]
+            h_id = lowest_id
+            for i in range(1,len(self.previous_hs[h_id].path)):
+                dx = self.previous_hs[h_id].path[i].x - self.previous_hs[h_id].path[i-1].x
+                dy = self.previous_hs[h_id].path[i].y - self.previous_hs[h_id].path[i-1].y
                 path_arr.append(np.array([dx, dy]))
-
-                last_n = (n.x, n.y)
 
                 return (path_arr, False)
 
@@ -136,6 +159,14 @@ class Hotspot(object):
     def dist(self):
         return self._dist
 
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def path_cost(self):
+        return self._path_cost
+
     def set_time(self, new_time):
         self._time_untracked = new_time
 
@@ -144,6 +175,10 @@ class Hotspot(object):
 
     def reset_time(self):
         self._time_untracked = 0
+
+    def set_path(self, path, cost):
+        self._path = path
+        self._path_cost = cost
 
     def update(self, new_hs_loc, new_uav_loc):
         self._location = new_hs_loc
