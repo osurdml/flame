@@ -2,6 +2,7 @@
 TIME_TO_RUN = 20
 
 #Planner
+ALPHA = .1
 
 # The rate at which to step through the simulation
 TIME_STEP = 0.005
