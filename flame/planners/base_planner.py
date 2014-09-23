@@ -42,7 +42,6 @@ class BasePlanner(object):
 
                 if self.direction == self.DIRECTION_CW:
                     travel_vec = -travel_vec
-
             return np.tile(travel_vec, config.VEHICLE_SPEED).reshape((-1,2))
 
         return None

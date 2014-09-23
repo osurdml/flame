@@ -4,11 +4,11 @@ import pygame
 import config
 
 class Vehicle(object):
-    VEHICLE_SPEED = 200 # pixels / sec
+    VEHICLE_SPEED = 20 # pixels / sec
 
     def __init__(self, planner):
         self.planner = planner
-        self.location = np.array([100.0, 100.0])
+        self.location = np.array([200.0, 150.0])
 
     def update(self, simulation_time):
         # Loop so we have per-pixel accuracy, rather than moving
