@@ -4,6 +4,7 @@ import sys
 class AStar(object):
     def __init__(self, graph):
         self.graph = graph
+
     def heuristic(self, node, start, end):
         raise NotImplementedError
 
@@ -13,17 +14,22 @@ class AStar(object):
         current = start
         openset.add(current)
         time_out = 0
-
+        threshold = 10
         while openset:
             current = min(openset, key=lambda o:o.g + o.h)
             time_out += 1
-            if current == end or time_out== 10000:
+            current_dist = sqrt((current.x- end.x)**2 + (current.y - end.y)**2) 
+            print "current distance = %d" %current_dist
+            if current_dist < threshold or time_out== 10000:
+                if time_out == 1000:
+                    print "TIMEOUT"
                 path = []
+                dist = current.g
                 while current.parent:
                     path.append(current)
                     current = current.parent
                 path.append(current)
-                return path[::-1]
+                return path[::-1], dist
             openset.remove(current)
             closedset.add(current)
             for node in self.graph[current]:

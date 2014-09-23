@@ -4,6 +4,7 @@ import astar
 from base_planner import BasePlanner
 from math import sqrt
 from .. import config
+import cv2
 class HotspotPlanner(object):
     def __init__(self, fire):
         self.time_untracked = [0]
@@ -62,7 +63,8 @@ class HotspotPlanner(object):
             # TODO: Grow the obstacle map so the planner doesn't get stuck in an
             # expanding fire. This causes the path planner to stall.
             obstacle_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-            obstacle_map = np.where(self.fire.fire_progression, 10000, 1)
+            obstacle_map = np.where(self.fire.fire_progression, 100000, 1)
+            obstacle_map = cv2.blur(obstacle_map,(5,5)) 
             graph, nodes = astar.make_graph(obstacle_map)
             #cost_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
             paths = astar.AStarGrid(graph)
