@@ -1,6 +1,9 @@
 # How many simulated time steps to run the simulation for
 TIME_TO_RUN = 20
 
+#Time to wait for hotspots to reappear before simulation ends
+TIMEOUT = 1000
+
 #Planner
 ALPHA = .1
 

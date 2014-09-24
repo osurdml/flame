@@ -13,6 +13,8 @@ class HotspotPlanner(object):
         self.dead_hs = {}
         self.tracker = HotspotTracker()
         self.fire = fire
+        self.timeout = 0
+        self.has_started = False
     @property
     def location(self):
         return self._location
@@ -22,8 +24,17 @@ class HotspotPlanner(object):
         self._location = location
         self.sub_planner.location = location
 
+    def is_done(self):
+        if self.timeout == config.TIMEOUT and self.has_started is True:
+            f = open('HotSpot_Max_Time.txt', 'w')
+            f.write('This is a test\n')
+            return True
+        return False
+
     def plan(self, simulation_time):
         if self.fire.clusters.any():
+            self.has_started = True
+            self.timeout = 0
             self.previous_hs, dead_hs = self.tracker.update(self.fire, self.previous_hs, self.location)
             for h_id,h in dead_hs.items():
                 self.dead_hs[h_id] = h
@@ -32,6 +43,7 @@ class HotspotPlanner(object):
                 print "%d: (%d, %d) dist %d, untracked for %d" % (h_id, h.location[0], h.location[1], h.dist, h.time)
             print "Max untracked %d" % (self.tracker.max_untracked)
             print "Dead hotspot IDs:", [h_id for h_id,h in self.dead_hs.items()]
+            print "max_time", [ h.max_time for h_id, h in self.dead_hs.items()]
             # Find nearest hotspot. Find hotspot with max time untracked.
             h_nearest = None
             h_maxtime = None
@@ -143,6 +155,7 @@ class HotspotPlanner(object):
 
         else:
             self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+            self.timeout += 1
         return (self.sub_planner.plan(simulation_time), True)
 
 
@@ -177,15 +190,13 @@ class Hotspot(object):
 
     def set_time(self, new_time):
         self._time_untracked = new_time
+        if self._time_untracked > self._max_time:
+            self._max_time = self._time_untracked
 
     def inc_time(self):
         self._time_untracked += 1
-    
-    def max_time(self):
         if self._time_untracked > self._max_time:
             self._max_time = self._time_untracked
-            print "help"
-
 
     def reset_time(self):
         self._time_untracked = 0
@@ -203,14 +214,9 @@ class HotspotTracker(object):
     def __init__(self):
         self._max_untracked = 0
         self._id_next = 0
-        self._max_time = 0
     @property
     def max_untracked(self):
         return self._max_untracked
-
-    @property
-    def max_time(self):
-        return self._max_time
 
     def distance_calc(self, a, b):
         dist =  sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
@@ -240,13 +246,12 @@ class HotspotTracker(object):
                 # Update old hotspot
                 hs[id_old].update(h_loc, uav_loc)
                 hs[id_old].inc_time()
-                hs[id_old].max_time()
                 # Update max untracked time and reset if in view of UAV.
                 if hs[id_old].time > self._max_untracked:
                     self._max_untracked = hs[id_old].time
                 if hs[id_old].dist < config.FOV:
                     hs[id_old].reset_time()
-               
+
                 # Add hotspot to new list using old ID and remove from old list (so we don't add the same one twice).
                 hs_new[id_old] = hs[id_old]
                 del hs[id_old]

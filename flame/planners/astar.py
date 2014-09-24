@@ -1,6 +1,7 @@
 from math import sqrt
 from itertools import product
 import sys
+import heapq
 class AStar(object):
     def __init__(self, graph):
         self.graph = graph
@@ -11,11 +12,22 @@ class AStar(object):
     def search(self, start, end):
         openset = set()
         closedset = set()
+        openheap = []
+        path = []
         current = start
         openset.add(current)
         time_out = 0
         threshold = 10
+
+        heapq.heapify(openheap)
+        heapq.heappush(openheap, start)
+        openset.add(current)
+        #openheap.append((current))
+        print openheap
+        print openset
+
         while openset:
+            #current = heapq.heappop(openheap)[1]
             current = min(openset, key=lambda o:o.g + o.h)
             time_out += 1
             current_dist = sqrt((current.x- end.x)**2 + (current.y - end.y)**2) 
@@ -45,6 +57,7 @@ class AStar(object):
                     node.h = self.heuristic(node, start, end)*9
                     node.parent = current
                     openset.add(node)
+                    heapq.heappush(openheap, (node))
         return None
 
 class AStarNode(object):
@@ -70,7 +83,6 @@ class AStarGridNode(AStarNode):
         # diagonal = abs(self.x - other.x) == 1 and abs(self.y - other.y) == 1
         # return 14 if diagonal else 10
         dist_cost = sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
-
         return dist_cost + self.cost
 
 def make_graph(mapinfo):

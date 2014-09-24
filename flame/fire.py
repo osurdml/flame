@@ -36,7 +36,7 @@ class Fire(object):
         # hotspots
         self.frontier_mask = np.zeros_like(self.fire_progression)
         self.frontier_mask[self.frontier] = 1
-        
+
         return self.frontier_mask
 
     def extract_clusters(self):
@@ -52,7 +52,7 @@ class Fire(object):
             self.kmeans.fit(hotspots)
 
             return self.kmeans.cluster_centers_
-	
+
         return np.empty((0, 2))
 
     def update(self, simulation_time):

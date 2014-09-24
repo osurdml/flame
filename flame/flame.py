@@ -20,9 +20,9 @@ def run():
 
     screen = pygame.display.set_mode(fire.shape(), pygame.HWSURFACE | pygame.DOUBLEBUF)
     clock = pygame.time.Clock()
-
+    print planner.is_done()
     simulation_time = 0
-    while simulation_time < config.TIME_TO_RUN:
+    while simulation_time < config.TIME_TO_RUN and planner.is_done() is False:
         # clock.tick(100)
 
         for entity in entities:
