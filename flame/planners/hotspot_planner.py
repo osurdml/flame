@@ -26,8 +26,12 @@ class HotspotPlanner(object):
 
     def is_done(self):
         if self.timeout == config.TIMEOUT and self.has_started is True:
-            f = open('HotSpot_Max_Time.txt', 'w')
-            f.write('This is a test\n')
+            f = open('HotSpot_Max_Time.txt', 'a')
+            a = [h_id for h_id,h in self.dead_hs.items()]
+            print a
+            b = [h.max_time for h_id, h in self.dead_hs.items()]
+            print b
+            f.write('Hotspot Ids: %r\n Max Time Untracked: %r\n' % (a, b))
             return True
         return False
 
@@ -35,6 +39,9 @@ class HotspotPlanner(object):
         if self.fire.clusters.any():
             self.has_started = True
             self.timeout = 0
+            # To end the simulation early for debug, uncomment the if statement
+            #if len(self.previous_hs) > 3:
+            #    self.timeout = 1000 
             self.previous_hs, dead_hs = self.tracker.update(self.fire, self.previous_hs, self.location)
             for h_id,h in dead_hs.items():
                 self.dead_hs[h_id] = h

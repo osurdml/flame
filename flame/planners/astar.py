@@ -12,15 +12,15 @@ class AStar(object):
     def search(self, start, end):
         openset = set()
         closedset = set()
-        openheap = []
+        #openheap = []
         path = []
         current = start
         openset.add(current)
         time_out = 0
         threshold = 10
 
-        heapq.heapify(openheap)
-        heapq.heappush(openheap, start)
+        #heapq.heapify(openheap)
+        #heapq.heappush(openheap, start)
         openset.add(current)
         #openheap.append((current))
         print openheap
@@ -57,7 +57,7 @@ class AStar(object):
                     node.h = self.heuristic(node, start, end)*9
                     node.parent = current
                     openset.add(node)
-                    heapq.heappush(openheap, (node))
+                    #heapq.heappush(openheap, (node))
         return None
 
 class AStarNode(object):
