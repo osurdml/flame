@@ -26,7 +26,7 @@ class HotspotPlanner(object):
 
     def is_done(self):
         if self.timeout == config.TIMEOUT and self.has_started is True:
-            f = open('HotSpot_Max_Time.txt', 'a')
+            f = open('data.txt', 'a')
             a = [h_id for h_id,h in self.dead_hs.items()]
             print a
             b = [h.max_time for h_id, h in self.dead_hs.items()]

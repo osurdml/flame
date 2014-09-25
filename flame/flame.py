@@ -10,7 +10,7 @@ def run():
     pygame.init()
     pygame.display.set_caption("Flame: Fire Simulator")
 
-    fire = Fire("data/ash1_raster.toa", "data/ash1_raster.fli")
+    fire = Fire("data/trial5/ashley.toa", "data/trial5/ashley.fli")
     planner = HotspotPlanner(fire)
 
     entities = [

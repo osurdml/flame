@@ -12,52 +12,48 @@ class AStar(object):
     def search(self, start, end):
         openset = set()
         closedset = set()
-        #openheap = []
+        openheap = []
         path = []
         current = start
         openset.add(current)
         time_out = 0
         threshold = 10
-
-        #heapq.heapify(openheap)
-        #heapq.heappush(openheap, start)
+        pq_and_node = [(current.g +current.h), current]
         openset.add(current)
-        #openheap.append((current))
-        print openheap
-        print openset
+        heapq.heappush(openheap, pq_and_node)
 
         while openset:
-            #current = heapq.heappop(openheap)[1]
-            current = min(openset, key=lambda o:o.g + o.h)
+            current = heapq.heappop(openheap)
+            #current = min(openset, key=lambda o:o.g + o.h)
             time_out += 1
-            current_dist = sqrt((current.x- end.x)**2 + (current.y - end.y)**2) 
+            current_dist = sqrt((current[1].x- end.x)**2 + (current[1].y - end.y)**2) 
             print "current distance = %d" %current_dist
+            if time_out == 1000:
+                print "!!!!!TIMEOUT!!!!!!"
             if current_dist < threshold or time_out== 10000:
-                if time_out == 1000:
-                    print "TIMEOUT"
                 path = []
-                dist = current.g
-                while current.parent:
-                    path.append(current)
-                    current = current.parent
-                path.append(current)
+                dist = current[1].g
+                while current[1].parent:
+                    path.append(current[1])
+                    current[1] = current[1].parent
+                path.append(current[1])
                 return path[::-1], dist
-            openset.remove(current)
-            closedset.add(current)
-            for node in self.graph[current]:
+            openset.remove(current[1])
+            closedset.add(current[1])
+            for node in self.graph[current[1]]:
                 if node in closedset:
                     continue
                 if node in openset:
-                    new_g = current.g + current.move_cost(node)
+                    new_g = current[1].g + current[1].move_cost(node)
                     if node.g > new_g:
                         node.g = new_g
-                        node.parent = current
+                        node.parent = current[1]
                 else:
-                    node.g = current.g + current.move_cost(node)
+                    node.g = current[1].g + current[1].move_cost(node)
                     node.h = self.heuristic(node, start, end)*9
-                    node.parent = current
+                    node.parent = current[1]
                     openset.add(node)
-                    #heapq.heappush(openheap, (node))
+                    heapq.heappush(openheap, [(node.g+node.h), node])
         return None
 
 class AStarNode(object):
