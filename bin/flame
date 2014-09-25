@@ -5,4 +5,13 @@ import os, sys
 sys.path.insert(0, os.path.abspath(os.getcwd()))
 
 from flame.flame import run
-run()
+
+#for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
+for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
+    for d in dirs:
+        dname = os.path.join(root, d)
+        fires_toa = os.path.join(dname, "ashley.toa")
+        fires_fli = os.path.join(dname, "ashley.fli")
+        print fires_toa
+        print fires_fli
+        run(fires_toa, fires_fli)

@@ -1,0 +1,25 @@
+Log File:  C:\FARSITE 4\Ashley\Output\trial8\ashley.LGR
+Date File Created: 09\24\2014
+Time File Created: 11:36
+
+File Units: English
+Landscape File:  C:\FARSITE 4\Ashley\Input\ASHLEY1.LCP
+Weather File 1: AUG10-13.WTR
+Wind File 1: ASHLEY.WND
+Adjustment File:  ashley.adj
+Fuel Moisture File:  AUG11.FMS
+Conversion File:  None
+Custom Fuel Model File:  ASHLEY.FMD
+Crown Fire: Disabled
+Ember Generation: Disabled
+Backing Spread: Calculated from Elliptical Dimensions
+Acceleration File Used:  Default Values
+
+Simulation Started (Day Hour:Min): 8/11 0:00
+Simulation Ended (Day Hour:Min): 08/12  18:00
+Elapsed Time (Days Hours:Mins): 01 18:00
+
+Actual Time Step (min): 60.000000
+Visible Time Step (min): 60.000000
+Perimeter Resolution (m): 90.000000
+Distance Resolution (m): 90.000000

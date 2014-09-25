@@ -15,6 +15,8 @@ class HotspotPlanner(object):
         self.fire = fire
         self.timeout = 0
         self.has_started = False
+        self.data_mt = open('cumulative_max_time.txt', 'a')
+
     @property
     def location(self):
         return self._location
@@ -26,22 +28,26 @@ class HotspotPlanner(object):
 
     def is_done(self):
         if self.timeout == config.TIMEOUT and self.has_started is True:
-            f = open('data.txt', 'a')
-            a = [h_id for h_id,h in self.dead_hs.items()]
-            print a
-            b = [h.max_time for h_id, h in self.dead_hs.items()]
-            print b
-            f.write('Hotspot Ids: %r\n Max Time Untracked: %r\n' % (a, b))
+            #f = open('data.txt', 'a')
+            #a = [h_id for h_id,h in self.dead_hs.items()]
+            #print a
+            #b = [h.max_time for h_id, h in self.dead_hs.items()]
+            #print b
+            #f.write('Hotspot Ids: %r\n Max Time Untracked: %r\n' % (a, b))
             return True
         return False
 
     def plan(self, simulation_time):
         if self.fire.clusters.any():
             self.has_started = True
+            cumulative_max_time = sum(h.max_time for h_id, h in self.dead_hs.items())
+            self.data_mt.write('%r\n'%(cumulative_max_time))
             self.timeout = 0
+
             # To end the simulation early for debug, uncomment the if statement
-            #if len(self.previous_hs) > 3:
-            #    self.timeout = 1000 
+            if len(self.previous_hs) > 3:
+                self.timeout = 1000
+
             self.previous_hs, dead_hs = self.tracker.update(self.fire, self.previous_hs, self.location)
             for h_id,h in dead_hs.items():
                 self.dead_hs[h_id] = h

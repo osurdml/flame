@@ -6,11 +6,11 @@ from fire import Fire
 from vehicle import Vehicle
 from planners.hotspot_planner import HotspotPlanner
 from planners.base_planner import BasePlanner
-def run():
+def run(fires_toa, fires_fli):
     pygame.init()
     pygame.display.set_caption("Flame: Fire Simulator")
 
-    fire = Fire("data/trial5/ashley.toa", "data/trial5/ashley.fli")
+    fire = Fire(fires_toa, fires_fli)
     planner = HotspotPlanner(fire)
 
     entities = [

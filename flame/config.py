@@ -2,7 +2,7 @@
 TIME_TO_RUN = 20
 
 #Time to wait for hotspots to reappear before simulation ends
-TIMEOUT = 1000
+TIMEOUT = 100
 
 #Planner
 ALPHA = .1
