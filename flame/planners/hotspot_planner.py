@@ -5,8 +5,9 @@ from base_planner import BasePlanner
 from math import sqrt
 from .. import config
 import cv2
+
 class HotspotPlanner(object):
-    def __init__(self, fire):
+    def __init__(self, fire, trial_directory):
         self.time_untracked = [0]
         self.sub_planner = BasePlanner(fire)
         self.previous_hs = {}
@@ -15,7 +16,7 @@ class HotspotPlanner(object):
         self.fire = fire
         self.timeout = 0
         self.has_started = False
-        self.data_mt = open('cumulative_max_time.txt', 'a')
+        self.data_mt = open(trial_directory + config.ALGORITHM + ".txt", 'a')
 
     @property
     def location(self):
@@ -40,7 +41,7 @@ class HotspotPlanner(object):
     def plan(self, simulation_time):
         if self.fire.clusters.any():
             self.has_started = True
-            cumulative_max_time = sum(h.max_time for h_id, h in self.dead_hs.items())
+            cumulative_max_time = sum([h.max_time for h_id, h in self.dead_hs.items()])
             self.data_mt.write('%r\n'%(cumulative_max_time))
             self.timeout = 0
 
@@ -66,13 +67,6 @@ class HotspotPlanner(object):
                 else:
                     if h.dist < h_nearest.dist:
                         h_nearest = h
-                if h_maxtime is None:
-                    h_maxtime_id = h_id
-                    h_maxtime = h
-                else:
-                    if h.time > h_maxtime.time:
-                        h_maxtime_id = h_id
-                        h_maxtime = h
             #print "target hotspot %d location (%d, %d)" % (h_maxtime_id, h_maxtime.location[0], h_maxtime.location[1])
             # Draw a vector to that hotspot.
             vec_to_nearest = np.array([h_nearest.location[0] - self.location[0],
@@ -80,7 +74,10 @@ class HotspotPlanner(object):
             dist_to_nearest = np.linalg.norm(vec_to_nearest)   # TODO(syoo): h_nearest.dist?
             vec_to_nearest = vec_to_nearest / dist_to_nearest   # Normalize.
 
-            self.sub_planner.direction = BasePlanner.DIRECTION_CW
+            self.sub_planner.direction = BasePlanner.DIRECTION_CCW
+
+            if config.ALGORITHM == "BASIC":
+                return (self.sub_planner.plan(simulation_time), True)
 
            #            if self.time_untracked % 5 == 0:
 
@@ -98,33 +95,50 @@ class HotspotPlanner(object):
             alg = None
             lowest_alg = None
             lowest_id = None
+            lowest_h = None
             #insert algorithm here
-           # for h_id,h in self.previous_hs.items():
-           #     end = nodes[int(h.location[0])][int(h.location[1])]
-           #     res = paths.search(start, end)
-           #     if res is not None:
-           #         h.set_path(res[0], res[1])
-           #         alg= -h.time + alpha *  h.path_cost
-           #         if lowest_alg == None:
-           #             lowest_alg = alg
-           #             lowest_id = h_id
-           #         else:
-           #             if alg < lowest_alg:
-           #                 lowest_alg = alg
-           #                 lowest_id = h_id
+            for h_id,h in self.previous_hs.items():
+                # is this working right?
+                end = nodes[int(h.location[0])][int(h.location[1])]
+                res = paths.search(start, end)
+                if res is not None:
+                    h.set_path(res[0], res[1])
+                    alg= -h.time + alpha *  h.path_cost
+                    if lowest_alg is None:
+                        lowest_alg = alg
+                        lowest_id = h_id
+                        lowest_h = h
+                    else:
+                        if alg < lowest_alg:
+                            lowest_alg = alg
+                            lowest_id = h_id
+                            lowest_h = h
+                    if h_maxtime is None:
+                        h_maxtime_id = h_id
+                        h_maxtime = h
+                    else:
+                        if h.time > h_maxtime.time:
+                            h_maxtime_id = h_id
+                            h_maxtime = h
+            #Algorithm Used
+            if config.ALGORITHM == "MAX":
+                path_setter = h_maxtime
+                path_id = h_maxtime_id
+            if config.ALGORITHM == "WEIGHTED":
+                path_setter = lowest_h
+                path_id = lowest_id
 
-            end = nodes[int(h_maxtime.location[0])][int(h_maxtime.location[1])]
-            res = paths.search(start, end)
             if res is not None:
-                h_maxtime.set_path(res[0], res[1])
+                path_setter.set_path(res[0], res[1])
 
-            print "target h_id = %d" %h_maxtime_id #lowest_id
-            print "path cost = %d" %self.previous_hs[h_maxtime_id].path_cost #lowest_id].path_cost
+            print "target h_id = %d" %h_maxtime_id
+            print "lowest_id = %d" %lowest_id
+            print "path cost = %d" %self.previous_hs[path_id].path_cost
             print "\n------------------------------\n"
 
             path_arr = []
             last_n = (int(self.location[0]), int(self.location[1]))
-            h_id = h_maxtime_id #lowest_id
+            h_id = path_id
             for i in range(1,len(self.previous_hs[h_id].path)):
                 dx = self.previous_hs[h_id].path[i].x - self.previous_hs[h_id].path[i-1].x
                 dy = self.previous_hs[h_id].path[i].y - self.previous_hs[h_id].path[i-1].y

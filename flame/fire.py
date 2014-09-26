@@ -5,7 +5,7 @@ import sklearn.cluster
 
 class Fire(object):
     # Minimum normalized value for a point to be considered a hotspot
-    HOTSPOT_MIN = 0.6
+    HOTSPOT_MIN = 0.4
 
     def __init__(self, toa_file, fli_file):
         self.time_of_arrival = osgeo.gdal.Open(toa_file).ReadAsArray()

@@ -12,6 +12,8 @@ for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
         dname = os.path.join(root, d)
         fires_toa = os.path.join(dname, "ashley.toa")
         fires_fli = os.path.join(dname, "ashley.fli")
+        trial_directory = d
+        print trial_directory
         print fires_toa
         print fires_fli
-        run(fires_toa, fires_fli)
+        run(fires_toa, fires_fli, trial_directory)
