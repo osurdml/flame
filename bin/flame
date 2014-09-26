@@ -5,8 +5,13 @@ import os, sys
 sys.path.insert(0, os.path.abspath(os.getcwd()))
 
 from flame.flame import run
+from flame import config
+import pylab
+import matplotlib.pyplot as plt
+from flame import results
 
 #for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
+trial_directory = None
 for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
     for d in dirs:
         dname = os.path.join(root, d)
@@ -17,3 +22,4 @@ for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
         print fires_toa
         print fires_fli
         run(fires_toa, fires_fli, trial_directory)
+results()

@@ -22,10 +22,10 @@ class Vehicle(object):
 
         if plan is not None:
             # Vector is normalized, scale it by the TIME_STEP
-
-            for step in plan[0:10]:
+            print 'steps'
+            for step in plan[0:2]:
+                print step
                 self.location += step # config.TIME_STEP * step
-
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)

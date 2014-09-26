@@ -5,6 +5,7 @@ from base_planner import BasePlanner
 from math import sqrt
 from .. import config
 import cv2
+import os, sys
 
 class HotspotPlanner(object):
     def __init__(self, fire, trial_directory):
@@ -16,7 +17,10 @@ class HotspotPlanner(object):
         self.fire = fire
         self.timeout = 0
         self.has_started = False
-        self.data_mt = open(trial_directory + config.ALGORITHM + ".txt", 'a')
+        combined = trial_directory + config.ALGORITHM
+        complete_name = os.path.abspath("output/" + combined + ".txt")
+        print complete_name
+        self.data_mt = open(complete_name, 'a')
 
     @property
     def location(self):
@@ -39,15 +43,17 @@ class HotspotPlanner(object):
         return False
 
     def plan(self, simulation_time):
+        if self.has_started == True:
+            cumulative_max_time = sum([h.max_time for h_id, h in self.dead_hs.items()]) + sum([h.max_time for h_id, h in self.previous_hs.items()])
+            self.data_mt.write('%r\n'%(cumulative_max_time))
+
         if self.fire.clusters.any():
             self.has_started = True
-            cumulative_max_time = sum([h.max_time for h_id, h in self.dead_hs.items()])
-            self.data_mt.write('%r\n'%(cumulative_max_time))
             self.timeout = 0
 
             # To end the simulation early for debug, uncomment the if statement
-            if len(self.previous_hs) > 3:
-                self.timeout = 1000
+            #if len(self.previous_hs) > 3:
+            #    self.timeout = 1000
 
             self.previous_hs, dead_hs = self.tracker.update(self.fire, self.previous_hs, self.location)
             for h_id,h in dead_hs.items():
@@ -143,8 +149,7 @@ class HotspotPlanner(object):
                 dx = self.previous_hs[h_id].path[i].x - self.previous_hs[h_id].path[i-1].x
                 dy = self.previous_hs[h_id].path[i].y - self.previous_hs[h_id].path[i-1].y
                 path_arr.append(np.array([dx, dy]))
-
-                return (path_arr, False)
+            return (path_arr, False)
 
             ## Figure out if path is CW or CCW
             #avg_x, avg_y = 0.0, 0.0

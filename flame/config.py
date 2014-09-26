@@ -1,5 +1,5 @@
 #Algorithm BASIC,MAX,WEIGHTED
-ALGORITHM = "BASIC" 
+ALGORITHM = "WEIGHTED"
 
 # How many simulated time steps to run the simulation for
 #TIME_TO_RUN = 20

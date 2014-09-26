@@ -25,7 +25,6 @@ def run(fires_toa, fires_fli, trial_directory):
     # This makes sure the simulation begins at the start of the fire
     simulation_time = np.asarray(fire.time_of_arrival)
     simulation_time = np.sort(simulation_time[simulation_time >= 0])[0]
-    print simulation_time
 
     while simulation_time and planner.is_done() is False:
         # clock.tick(100)
