@@ -8,10 +8,11 @@ from flame.flame import run
 from flame import config
 import pylab
 import matplotlib.pyplot as plt
-from flame import results
+#import multiprocessing as mp
 
 #for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
 trial_directory = None
+#def sim():
 for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
     for d in dirs:
         dname = os.path.join(root, d)
@@ -22,4 +23,12 @@ for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
         print fires_toa
         print fires_fli
         run(fires_toa, fires_fli, trial_directory)
-results()
+#from flame import results
+#results()
+#processes = [mp.Process(target= sim) for x in range(8)]
+#
+#for p in processes:
+#    p.start()
+#
+#for p in processes:
+#    p.join()

@@ -3,69 +3,57 @@ import config
 #import pylab
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/output'):
     ll = []
-    basic_ave = []
-    basic_num = 0
-    max_ave = []
-    weighted_ave = []
-    max_num = 0
-    weighted_num = 0
-    min_yvalues = True
+    max_data = []
+    basic_data = []
+    weighted_data = []
     for f in files:
         label = f
         ll.append(label.replace(".txt", ""))
         dname = os.path.join(root,f)
         data_list = np.loadtxt(dname)
-        yvalues = range(len(data_list))
+        if "BASIC" in dname:
+            basic_data.append(data_list)
+        if "MAX" in dname:
+            max_data.append(data_list)
+        if "WEIGHTED" in dname:
+            weighted_data.append(data_list)
 
-        if min_yvalues == True:
-            min_yvalues = yvalues
+    min_len = True
+    for i in range(len(weighted_data)):
+        if min_len == True:
+            min_len = len(weighted_data[i])
+        if len(weighted_data[i]) < min_len:
+            min_len = len(weighted_data[i])
+    for i in range(len(weighted_data)):
+        print i
+        print len(weighted_data[i][0:min_len])
+        weighted_data[i] = weighted_data[i][0:min_len]
+        print len(weighted_data[i])
+    for i in range(len(max_data)):
+        print i
+        print len(max_data[i][0:min_len])
+        max_data[i] = max_data[i][0:min_len]
+        print len(max_data[i])
+    for i in range(len(basic_data)):
+        print i
+        print len(basic_data[i][0:min_len])
+        basic_data[i] = basic_data[i][0:min_len]
+        print len(basic_data[i])
 
-        if len(yvalues) < len(min_yvalues):
-            min_yvalues = yvalues
+    weighted_data_ave =  np.mean(weighted_data, axis = 0)
+    max_data_ave =  np.mean(max_data, axis = 0)
+    basic_data_ave =  np.mean(basic_data, axis = 0)
+    weighted_data_sem =np.true_divide(np.std(weighted_data, axis =0),math.sqrt(len(weighted_data)))
+    max_data_sem =np.true_divide(np.std(max_data, axis =0), math.sqrt(len(max_data)))
+    basic_data_sem =np.true_divide(np.std(basic_data, axis =0), math.sqrt(len(basic_data)))
 
-        if 'BASIC' in f:
-            basic_num = basic_num + 1
-            for i in range(len(data_list)):
-                if len(basic_ave) < len(data_list):
-                    basic_ave.append(data_list[i])
-                if basic_num == len(data_list):
-                    basic_ave[i] = (data_list[i] + basic_ave[i])
-                    for j in range(len(basic_ave)):
-                        basic_ave[j] = basic_ave[j] / basic_num
-                else:
-                    basic_ave[i] = (data_list[i] + basic_ave[i])
-
-        if 'MAX' in f:
-            max_num = max_num + 1
-            for i in range(len(data_list)):
-                if len(max_ave) < len(data_list):
-                    max_ave.append(data_list[i])
-                if max_num == len(data_list):
-                    max_ave[i] = (data_list[i] + max_ave[i])
-                    for j in range(len(max_ave)):
-                        max_ave[j] = max_ave[j] / max_num
-                else:
-                    max_ave[i] = (data_list[i] + max_ave[i])
-
-        if 'WEIGHTED' in f:
-            weighted_num = weighted_num + 1
-            for i in range(len(data_list)):
-                if len(weighted_ave) < len(data_list):
-                    weighted_ave.append(data_list[i])
-                if weighted_num == len(data_list):
-                    weighted_ave[i] = (data_list[i] + weighted_ave[i])
-                    for j in range(len(weighted_ave)):
-                        weighted_ave[j] = weighted_ave[j] / weighted_num
-                else:
-                    weighted_ave[i] = (data_list[i] + weighted_ave[i])
-
-    print basic_ave[0:len(min_yvalues)]
-    min_yvalues = range(550)
-    plt.plot(min_yvalues, weighted_ave[0:len(min_yvalues)], label = 'weighted')
-    plt.plot(min_yvalues, basic_ave[0:len(min_yvalues)], label = 'basic')
-    plt.plot(min_yvalues, max_ave[0:len(min_yvalues)], label = 'max')
+    print range(min_len)
+    plt.errorbar(range(min_len), weighted_data_ave, yerr = weighted_data_sem, label = 'weighted')
+    plt.errorbar(range(min_len), max_data_ave, yerr = max_data_sem, label = 'weighted')
+    plt.errorbar(range(min_len), basic_data_ave, yerr = basic_data_sem, label = 'weighted')
     plt.legend(loc= 'upper right')
     plt.show()
