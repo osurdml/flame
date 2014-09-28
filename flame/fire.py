@@ -2,14 +2,19 @@ import osgeo.gdal
 import numpy as np
 import pygame
 import sklearn.cluster
-
+from flame import config
 class Fire(object):
     # Minimum normalized value for a point to be considered a hotspot
-    HOTSPOT_MIN = 0.4
+    HOTSPOT_MIN = config.HOTSPOT_MIN 
 
     def __init__(self, toa_file, fli_file):
         self.time_of_arrival = osgeo.gdal.Open(toa_file).ReadAsArray()
         self.fire_intensity = osgeo.gdal.Open(fli_file).ReadAsArray()
+        #self.time_of_arrival = np.asarray(fire.time_of_arrival)
+        #self.time_of_arrival = np.sort(simulation_time[simulation_time >= 0])[0]
+        #for i in range(self.time_of_arrival[0])
+        #    for j in range(self.time_of_arrival[1])
+        #        self.time_of_arrival.argmin
 
         # Normalize intensity values to [0,1]
         self.fire_intensity[self.fire_intensity < 0] = 0

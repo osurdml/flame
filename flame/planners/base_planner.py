@@ -33,9 +33,9 @@ class BasePlanner(object):
             # Travel towards the fire, away from it, or along it depending
             # on how far the vehicle is from the fire line.
             travel_vec = None
-            if dist_to_nearest > 20:
+            if dist_to_nearest > 15:
                 travel_vec = vec_to_nearest
-            elif dist_to_nearest < 16:
+            elif dist_to_nearest < 11:
                 travel_vec = -vec_to_nearest
             else:
                 travel_vec = np.array([[-vec_to_nearest[1], vec_to_nearest[0]]])

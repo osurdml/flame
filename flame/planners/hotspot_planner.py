@@ -90,21 +90,25 @@ class HotspotPlanner(object):
             # TODO: Grow the obstacle map so the planner doesn't get stuck in an
             # expanding fire. This causes the path planner to stall.
             obstacle_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-            obstacle_map = np.where(self.fire.frontier_map, 100000, 1)
-            obstacle_map = cv2.blur(obstacle_map,(5,5)) 
+            obstacle_map = np.where(self.fire.fire_progression, 10000, 1)
+            #obstacle_map = cv2.blur(obstacle_map,(15,15)) 
             graph, nodes = astar.make_graph(obstacle_map)
             #cost_map = scipy.signal.convolve2d(self.fire.fire_progression, [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
             paths = astar.AStarGrid(graph)
             start = nodes[int(self.location[0])][int(self.location[1])]
-
             alpha = config.ALPHA
             alg = None
             lowest_alg = None
             lowest_id = None
             lowest_h = None
+
             #insert algorithm here
             for h_id,h in self.previous_hs.items():
                 # is this working right?
+                (xs, ys) = self.fire.frontier
+                dists = (xs - h.location[0]) ** 2 + (ys - h.location[1]) ** 2
+                end = np.argmin(dists)
+                
                 end = nodes[int(h.location[0])][int(h.location[1])]
                 res = paths.search(start, end)
                 if res is not None:

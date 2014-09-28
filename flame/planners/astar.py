@@ -2,6 +2,8 @@ from math import sqrt
 from itertools import product
 import sys
 import heapq
+from flame import config
+
 class AStar(object):
     def __init__(self, graph):
         self.graph = graph
@@ -28,7 +30,7 @@ class AStar(object):
             time_out += 1
             current_dist = sqrt((current[1].x- end.x)**2 + (current[1].y - end.y)**2) 
             print "current distance = %d" %current_dist
-            if time_out == 1000:
+            if time_out == config.ASTAR_TIMEOUT:
                 print "!!!!!TIMEOUT!!!!!!"
             if current_dist < threshold or time_out== 10000:
                 path = []

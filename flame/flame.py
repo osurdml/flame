@@ -6,6 +6,7 @@ from fire import Fire
 from vehicle import Vehicle
 from planners.hotspot_planner import HotspotPlanner
 from planners.base_planner import BasePlanner
+from flame import config
 def run(fires_toa, fires_fli, trial_directory):
     pygame.init()
     pygame.display.set_caption("Flame: Fire Simulator")
@@ -25,8 +26,8 @@ def run(fires_toa, fires_fli, trial_directory):
     # This makes sure the simulation begins at the start of the fire
     simulation_time = np.asarray(fire.time_of_arrival)
     simulation_time = np.sort(simulation_time[simulation_time >= 0])[0]
-
-    while simulation_time and planner.is_done() is False:
+    MAX_SIM_TIME = config.MAX_SIM_TIME + simulation_time
+    while simulation_time < MAX_SIM_TIME and planner.is_done() is False:
         # clock.tick(100)
 
         for entity in entities:
