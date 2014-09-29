@@ -108,12 +108,11 @@ class HotspotPlanner(object):
                 (xs, ys) = self.fire.frontier
                 dists = (xs - h.location[0]) ** 2 + (ys - h.location[1]) ** 2
                 end = np.argmin(dists)
-                
                 end = nodes[int(h.location[0])][int(h.location[1])]
                 res = paths.search(start, end)
                 if res is not None:
                     h.set_path(res[0], res[1])
-                    alg= -h.time + alpha *  h.path_cost
+                    alg = -h.time + alpha * h.path_cost
                     if lowest_alg is None:
                         lowest_alg = alg
                         lowest_id = h_id
@@ -141,8 +140,7 @@ class HotspotPlanner(object):
             if res is not None:
                 path_setter.set_path(res[0], res[1])
 
-            print "target h_id = %d" %h_maxtime_id
-            print "lowest_id = %d" %lowest_id
+            print "target h_id = %d" %path_id
             print "path cost = %d" %self.previous_hs[path_id].path_cost
             print "\n------------------------------\n"
 
