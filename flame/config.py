@@ -1,5 +1,5 @@
 #Algorithm BASIC,MAX,WEIGHTED
-ALGORITHM = "WEIGHTED"
+ALGORITHM = "BASIC"
 
 #Max simulation time
 MAX_SIM_TIME = 10
@@ -12,7 +12,7 @@ HOTSPOT_MIN = .45
 TIMEOUT = 400
 
 #Planner
-ALPHA = .5 
+ALPHA = .001
 
 # The rate at which to step through the simulation
 TIME_STEP = 0.005

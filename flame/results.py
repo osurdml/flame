@@ -1,6 +1,6 @@
 import os, sys
 import config
-#import pylab
+from pylab import *
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -53,8 +53,23 @@ for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/output'):
     max_data_sem = np.true_divide(np.std(max_data, axis = 0), math.sqrt(len(max_data)))
     basic_data_sem = np.true_divide(np.std(basic_data, axis = 0), math.sqrt(len(basic_data)))
 
-    plt.errorbar(range(min_len), weighted_data_ave, yerr = weighted_data_sem, label = 'weighted')
-    plt.errorbar(range(min_len), max_data_ave, yerr = max_data_sem, label = 'max')
-    plt.errorbar(range(min_len), basic_data_ave, yerr = basic_data_sem, label = 'basic')
-    plt.legend(loc= 'upper right')
+    fig = plt.figure(figsize=(4,3))
+    ax = fig.add_subplot(111)
+    plt.fill_between(range(min_len), (weighted_data_ave + weighted_data_sem),  (weighted_data_ave - weighted_data_sem), color='blue', alpha=0.05)
+    plt.fill_between(range(min_len), (max_data_ave + max_data_sem),  (max_data_ave - max_data_sem), color='red', alpha=0.05)
+    plt.fill_between(range(min_len), (basic_data_ave + basic_data_sem),  (basic_data_ave - basic_data_sem), color='green', alpha=0.05)
+    plt.plot(range(min_len), weighted_data_ave, label = 'weighted', color= 'blue')
+    plt.plot(range(min_len), max_data_ave, label = 'max', color = 'red')
+    plt.plot(range(min_len), basic_data_ave, label = 'basic', color = 'green')
+    ax.set_xlim(0,min_len)
+    ax.tick_params(axis='x', labelsize=30)
+    ax.tick_params(axis='y', labelsize=30)
+    ax.set_xlabel('Time', fontsize= 50)
+    ax.set_ylabel('Sum of Max Time Untracked for all Hotspots', fontsize = 50)
+    ax.xaxis.labelpad = 20 
+    ax.yaxis.labelpad = 20 
+    fig.suptitle('FLAME HOTSPOT TRACKING', fontsize= 70, fontweight='bold')
+    leg = plt.legend(loc= 'upper left', prop={'size':60})
+    for legobj in leg.legendHandles:
+            legobj.set_linewidth(8.0)
     plt.show()
