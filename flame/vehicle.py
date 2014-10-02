@@ -19,6 +19,7 @@ class Vehicle(object):
         print "iteration = %d" % self.iteration
         self.planner.location = self.location
         (plan, replan) = self.planner.plan(simulation_time)
+        vis_plan = plan
 
         if plan is not None:
             # Vector is normalized, scale it by the TIME_STEP
@@ -26,7 +27,7 @@ class Vehicle(object):
             for step in plan[0:2]:
                 print step
                 self.location += step # config.TIME_STEP * step
-
+                
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0), self.location.astype(np.uint), 3)
 

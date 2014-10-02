@@ -27,6 +27,8 @@ def run(fires_toa, fires_fli, trial_directory):
     simulation_time = np.asarray(fire.time_of_arrival)
     simulation_time = np.sort(simulation_time[simulation_time >= 0])[0]
     MAX_SIM_TIME = config.MAX_SIM_TIME + simulation_time
+    global vis_plan
+    vis_plan = []
     while simulation_time < MAX_SIM_TIME and planner.is_done() is False:
         # clock.tick(100)
 
@@ -48,6 +50,14 @@ def run(fires_toa, fires_fli, trial_directory):
             for (x, y) in clusters:
                 pygame.draw.circle(cluster_surf, (255, 0, 0, 128), (x, y), 6)
         screen.blit(cluster_surf, (0, 0))
+        if len(vis_plan) >0:
+            print vis_plan
+            vis_plan_surf = pygame.Surface(fire.shape(), pygame.SRCALPHA)
+            vis_plan = plan.astype(np.uint)
+            for (x,y) in plan:
+                vis_plan.set_at((x, y), (255, 0, 0, 255))
+            print 
+            screen.blit(vis_plan_surf, (0, 0))
 
         simulation_time += config.TIME_STEP
 
