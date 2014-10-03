@@ -68,8 +68,11 @@ class Fire(object):
         self.clusters = self.extract_clusters()
 
     def draw(self, screen):
+        values = (self.fire_progression * 255).astype(np.uint32)
+        values[values == 0] = 0xFFFFFF # background
+
         surface = pygame.Surface(self.fire_progression.shape)
-        pygame.surfarray.blit_array(surface, (self.fire_progression * 255).astype(np.uint32))
+        pygame.surfarray.blit_array(surface, values)
 
         screen.blit(surface, (0, 0))
 
