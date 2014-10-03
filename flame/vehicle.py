@@ -31,6 +31,6 @@ class Vehicle(object):
                 self.location += step # config.TIME_STEP * step
                 
     def draw(self, screen):
-        pygame.draw.circle(screen, (0,0, 255), self.location.astype(np.uint), 3)
+        pygame.draw.circle(screen, (0,255,0), self.location.astype(np.uint), 3)
 
 
