@@ -48,7 +48,7 @@ def run(fires_toa, fires_fli, trial_directory):
         clusters = fire.clusters.astype(np.uint)
         if clusters.any():
             for (x, y) in clusters:
-                pygame.draw.circle(cluster_surf, (255, 0, 0, 255), (x, y), 6)
+                pygame.draw.circle(cluster_surf, (255, 0, 0, 128), (x, y), 6)
         screen.blit(cluster_surf, (0, 0))
         if len(vehicle.vis_plan) >0:
             vis_plan_surf = pygame.Surface(fire.shape(), pygame.SRCALPHA)
