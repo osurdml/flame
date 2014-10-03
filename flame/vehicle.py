@@ -19,6 +19,8 @@ class Vehicle(object):
         print "iteration = %d" % self.iteration
         self.planner.location = self.location
         (plan, replan) = self.planner.plan(simulation_time)
+
+        global vis_plan
         vis_plan = plan
 
         if plan is not None:
