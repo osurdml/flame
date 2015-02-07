@@ -1,13 +1,22 @@
 #!/usr/bin/python2
 
 import os, sys
-
+print sys.path
 sys.path.insert(0, os.path.abspath(os.getcwd()))
 
 from flame.flame import run
 from flame import config
 import pylab
 import matplotlib.pyplot as plt
+import time
+import threading
+
+def send_gps():
+    print "                                       GPS DATA"
+    threading.Timer(1, send_gps).start()
+
+send_gps()
+
 #import multiprocessing as mp
 
 #for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
