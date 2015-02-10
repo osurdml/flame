@@ -3,7 +3,9 @@ import pygame
 import time
 import threading
 import config
-
+import roslib
+#from mavros.srv import *
+#from mavros.msg import *
 
 class Vehicle(object):
     VEHICLE_SPEED = 20 # pixels / sec
@@ -12,7 +14,7 @@ class Vehicle(object):
         self.planner = planner
         self.location = np.array([200.0, 150.0])
         self.iteration = 0
-        self.send_gps()
+        #self.send_gps()
     def update(self, simulation_time):
         # Loop so we have per-pixel accuracy, rather than moving
         # VEHICLE_SPEED pixels per simulation tick. This would cause
@@ -36,13 +38,21 @@ class Vehicle(object):
     def draw(self, screen):
         pygame.draw.circle(screen, (0,255,0), self.location.astype(np.uint), 3)
 
-    def send_gps(self):
-        gps_location = 0; #may need to move this so it doesn't get set to zero everytime...
-        gps_start = 0; #change for initial gps
-        print"                   GPS GPS GPS GPS GPS"
-        print self.location
-        gps_location = self.location * 0.00001784864 + gps_start
-        threading.Timer(1, self.send_gps).start()
+    #def send_gps(self):
+       # gps_location = 0; #may need to move this so it doesn't get set to zero everytime...
+        #gps_start = 0; #change for initial gps
+        #print"                   GPS GPS GPS GPS GPS"
+        #print self.location
+
+        #Waypoint myGPSMsg
+        #myGPSMsg.frame = 0
+        #myGPSMsg.command = 16
+        #myGPSMsg.x_lat = gps_start + self.location[0]*0.00001784864
+        #myGPSMsg.y_lat = gps_start + self.location[1]*0.00001784864
+        #myGPSMsg.z_alt = gps_start + 10 #need to make this number ~10 feet somehow
+
+
+        #threading.Timer(1, self.send_gps).start()
 
 
 

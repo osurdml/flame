@@ -1,29 +1,36 @@
 #!/usr/bin/python2
+import roslib
 
 import os, sys
 print sys.path
-sys.path.insert(0, os.path.abspath(os.getcwd()))
+package_path = os.path.dirname(__file__)+"/.."
+sys.path.insert(0, os.path.abspath(package_path))
 
-from flame.flame import run
+from flame.flame import run, gps_init
 from flame import config
 import pylab
 import matplotlib.pyplot as plt
 import time
 import threading
+import rospy
 
-def send_gps():
-    print "                                       GPS DATA"
-    threading.Timer(1, send_gps).start()
-
-send_gps()
+#def send_gps():
+#    print "                                       GPS DATA"
+#    threading.Timer(1, send_gps).start()
+#
+#send_gps()
 
 #import multiprocessing as mp
 
 #for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
 trial_directory = None
 #def sim():
-for root,dirs,files in os.walk('/home/ryan/Documents/Programming/flame/data/'):
+gps_init()
+print "BEGINNING"
+for root,dirs,files in os.walk(package_path+"/data"):
+    print "BEGINNING 2"
     for d in dirs:
+        print "BEGINNING 3"
         dname = os.path.join(root, d)
         fires_toa = os.path.join(dname, "ashley.toa")
         fires_fli = os.path.join(dname, "ashley.fli")

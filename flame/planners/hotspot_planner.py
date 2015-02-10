@@ -18,7 +18,8 @@ class HotspotPlanner(object):
         self.timeout = 0
         self.has_started = False
         combined = trial_directory + config.ALGORITHM
-        complete_name = os.path.abspath("output/" + combined + ".txt")
+        package_path = os.path.dirname(__file__)+"/.."
+        complete_name = os.path.abspath(package_path + combined + ".txt")
         print complete_name
         self.data_mt = open(complete_name, 'a')
 

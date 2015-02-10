@@ -28,3 +28,5 @@ HS_RADIUS = 20
 
 #AStar timeout
 ASTAR_TIMEOUT = 1000
+
+#Package Path
