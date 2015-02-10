@@ -2,7 +2,7 @@
 	<!-- vim: ft=xml -->
 	<!-- This file almost same as apm2.launch but defaults set for connections via 3DR Radio modem -->
 	<arg name="fcu_url" default="/dev/ttyUSB0:57600" />
-        <arg name="gcs_url" default="" /> <!-- remove 14550 to return to default gcs off, this is an attempt to connect to gcs at same time-->
+	<arg name="gcs_url" default="tcp-l://0.0.0.0:4567@" /> <!-- remove 14550 to return to default gcs off, this is an attempt to connect to gcs at same time-->
 	<arg name="tgt_system" default="1" />
 	<arg name="tgt_component" default="50" />
 
