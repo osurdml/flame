@@ -19,7 +19,7 @@ class AStar(object):
         current = start
         openset.add(current)
         time_out = 0
-        threshold = 10
+        threshold = 5
         pq_and_node = [(current.g +current.h), current]
         openset.add(current)
         heapq.heappush(openheap, pq_and_node)
@@ -29,7 +29,7 @@ class AStar(object):
             #current = min(openset, key=lambda o:o.g + o.h)
             time_out += 1
             current_dist = sqrt((current[1].x- end.x)**2 + (current[1].y - end.y)**2) 
-            print "current distance = %d" %current_dist
+            #print "current distance = %d" %current_dist
             if time_out == config.ASTAR_TIMEOUT:
                 print "!!!!!TIMEOUT!!!!!!"
             if current_dist < threshold or time_out== 10000:

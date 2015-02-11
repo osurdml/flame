@@ -12,7 +12,7 @@ class Vehicle(object):
 
     def __init__(self, planner):
         self.planner = planner
-        self.location = np.array([200.0, 150.0])
+        self.location = np.array([150.0, 150.0])
         self.iteration = 0
         #self.send_gps()
     def update(self, simulation_time):

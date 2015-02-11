@@ -15,7 +15,7 @@ TIMEOUT = 400
 ALPHA = 50
 
 # The rate at which to step through the simulation
-TIME_STEP = 0.005
+TIME_STEP = 0.01
 
 VEHICLE_SPEED = 2
 
@@ -29,4 +29,8 @@ HS_RADIUS = 20
 #AStar timeout
 ASTAR_TIMEOUT = 1000
 
-#Package Path
+#Declare if using ROS or not
+USING_ROS = False
+
+#Wait time between loops
+DEADLINE = .5

@@ -25,12 +25,13 @@ import rospy
 #for root, dirs, files in os.walk('/home/ryan/Documents/Programming/flame/flame/data/'):
 trial_directory = None
 #def sim():
-gps_init()
-print "BEGINNING"
+if config.USING_ROS:
+    gps_init()
 for root,dirs,files in os.walk(package_path+"/data"):
-    print "BEGINNING 2"
     for d in dirs:
-        print "BEGINNING 3"
+        skip = raw_input(' Skip fire? ')
+        if skip == "y":
+           continue
         dname = os.path.join(root, d)
         fires_toa = os.path.join(dname, "ashley.toa")
         fires_fli = os.path.join(dname, "ashley.fli")

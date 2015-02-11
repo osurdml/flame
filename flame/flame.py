@@ -14,7 +14,7 @@ from mavros.msg import *
 from mavros.srv import *
 import time
 home_offset = 0
-home_offset_flag = 0
+home_offset_flag = 0 
 
 def waypoints_cb(data):
     global home_offset, home_offset_flag
@@ -29,7 +29,8 @@ def handle_waypoints(data):
 def run(fires_toa, fires_fli, trial_directory):
     #Start GPS Node
     global home_offset, home_offset_flag
-    rospy.init_node('waypoint')
+    if config.USING_ROS:
+        rospy.init_node('waypoint')
     #rospy.Subscriber('/mavros/mission/waypoints', WaypointList, handle_waypoints)
     pygame.init()
     pygame.display.set_caption("Flame: Fire Simulator")
@@ -53,16 +54,19 @@ def run(fires_toa, fires_fli, trial_directory):
 
     #Waypoint set up
     old_time = 0.0
-    time_difference = 0
+    time_difference = 0.0
     update_rate = 5
-    get_gps()
+    if config.USING_ROS:
+        get_gps()
     #rospy.loginfo("Got home: %s", home_offset)
-    scaling_factor_x = .078534/364576.4709016314    #(feet/pixel)/(feet/degree)
-    scaling_factor_y = .078534/260659.33267246236   #(feet/pixel)/(feet/degree)
+    scaling_factor_x = .078534/364576.4709016314  *5  #(feet/pixel)/(feet/degree)
+    scaling_factor_y = .078534/260659.33267246236 *5  #(feet/pixel)/(feet/degree)
 
 
     while simulation_time < MAX_SIM_TIME and planner.is_done() is False:
         # clock.tick(100)
+
+        loop_start_time = time.time()
 
         for entity in entities:
             entity.update(simulation_time)
@@ -95,19 +99,20 @@ def run(fires_toa, fires_fli, trial_directory):
             screen.blit(vis_plan_surf, (0, 0))
 
         time_since = time.time() - old_time
-        if time_since > update_rate:
+        print "time_since: ", time_since
+        if (time_since > update_rate) & config.USING_ROS:
 
             #conversion to GPS
-            x_loc = entities[1].location[0]*scaling_factor_x + home_offset.x_lat
-            y_loc = entities[1].location[1]*scaling_factor_y + home_offset.y_long
+            x_loc = (fire.shape(0) - entities[1].location[0])*scaling_factor_x + home_offset.x_lat
+            y_loc = (fire.shape(1) - entities[1].location[1])*scaling_factor_y + home_offset.y_long
 
             #Send Waypoint
             #rospy.loginfo("waiting for MAVROS PUSH service")
             rospy.wait_for_service('/mavros/mission/push')
-            waypoints = [Waypoint(frame=Waypoint.FRAME_GLOBAL_REL_ALT,
+            waypoints = [home_offset, Waypoint(frame=Waypoint.FRAME_GLOBAL_REL_ALT,
                             command=Waypoint.NAV_WAYPOINT,
                             is_current=True,
-                            x_lat=x_loc, y_long= y_loc, z_alt=20)
+                            x_lat=x_loc, y_long= y_loc, z_alt=6)
                         ]
             waypoint_push = rospy.ServiceProxy('/mavros/mission/push', WaypointPush)
             resp = waypoint_push(waypoints)
@@ -118,7 +123,11 @@ def run(fires_toa, fires_fli, trial_directory):
 
         #Advance one timestep
         simulation_time += config.TIME_STEP
-        get_gps()
+
+        #Wait for the deadline
+        loop_time = time.time() - loop_start_time
+        while loop_time <= config.DEADLINE:
+            loop_time = time.time() - loop_start_time
         pygame.display.flip()
 
 
