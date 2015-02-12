@@ -1,3 +1,4 @@
+import numpy as np
 #Algorithm BASIC,MAX,WEIGHTED
 ALGORITHM = "WEIGHTED"
 
@@ -25,12 +26,17 @@ FOV = 15
 # Radius to consider hotspots the same after each iteration
 HS_RADIUS = 20
 
-
 #AStar timeout
 ASTAR_TIMEOUT = 1000
 
 #Declare if using ROS or not
-USING_ROS = False
+USING_ROS = True
 
 #Wait time between loops
 DEADLINE = .5
+
+#Initial Vehicle Location
+STARTING_LOCATION = np.array([150.0, 150.0])
+
+#Rate at which to send GPS in seconds
+UPDATE_RATE = 2

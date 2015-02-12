@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import csv
 
 import config
 from fire import Fire
@@ -14,13 +15,16 @@ from mavros.msg import *
 from mavros.srv import *
 import time
 home_offset = 0
-home_offset_flag = 0 
+home_offset_flag = 0
 
 def waypoints_cb(data):
     global home_offset, home_offset_flag
     print data
     if home_offset_flag == 0:
-        home_offset = data.waypoints[0]
+        home_offset = Waypoint(frame=Waypoint.FRAME_GLOBAL_REL_ALT,
+                            command=Waypoint.NAV_WAYPOINT,
+                            is_current=True,
+                            x_lat=44.5654, y_long= -123.2725, z_alt=0) #data.waypoints[0]
     rospy.loginfo("PULLED GPS LOCATION:  %s", data.waypoints)
 
 def handle_waypoints(data):
@@ -28,6 +32,12 @@ def handle_waypoints(data):
 
 def run(fires_toa, fires_fli, trial_directory):
     #Start GPS Node
+
+    gps_file = open('gps.csv', 'wb')
+    a = csv.writer(gps_file)
+    header = [['latitude', 'longitude']]
+    a.writerows(header)
+
     global home_offset, home_offset_flag
     if config.USING_ROS:
         rospy.init_node('waypoint')
@@ -55,12 +65,15 @@ def run(fires_toa, fires_fli, trial_directory):
     #Waypoint set up
     old_time = 0.0
     time_difference = 0.0
-    update_rate = 5
     if config.USING_ROS:
         get_gps()
     #rospy.loginfo("Got home: %s", home_offset)
-    scaling_factor_x = .078534/364576.4709016314  *5  #(feet/pixel)/(feet/degree)
-    scaling_factor_y = .078534/260659.33267246236 *5  #(feet/pixel)/(feet/degree)
+    test_scale_multiplier =10
+    scaling_factor_x = .078534/364576.4709016314  *test_scale_multiplier  #(feet/pixel)/(feet/degree)
+    scaling_factor_y = .078534/260659.33267246236 *test_scale_multiplier #(feet/pixel)/(feet/degree)
+
+    map_offset_x = home_offset.y_long - config.STARTING_LOCATION[0]*scaling_factor_x
+    map_offset_y = home_offset.x_lat + config.STARTING_LOCATION[1]*scaling_factor_y
 
 
     while simulation_time < MAX_SIM_TIME and planner.is_done() is False:
@@ -100,22 +113,43 @@ def run(fires_toa, fires_fli, trial_directory):
 
         time_since = time.time() - old_time
         print "time_since: ", time_since
-        if (time_since > update_rate) & config.USING_ROS:
+        if (time_since > config.UPDATE_RATE) & config.USING_ROS:
 
             #conversion to GPS
-            x_loc = (fire.shape(0) - entities[1].location[0])*scaling_factor_x + home_offset.x_lat
-            y_loc = (fire.shape(1) - entities[1].location[1])*scaling_factor_y + home_offset.y_long
+            print "FIRE SHAPE:"
+            print fire.shape()
+            print "UAV LOCATION:"
+            print entities[1].location
+            long_cor = entities[1].location[0]*scaling_factor_x + map_offset_x
+            lat_cor = -entities[1].location[1]*scaling_factor_y + map_offset_y 
 
+            # b = open('gps.csv', 'ab')
+            #a = csv.writer(b)
+            #data = [[lat_cor, long_cor]]
+            #a.writerows(data)
             #Send Waypoint
             #rospy.loginfo("waiting for MAVROS PUSH service")
+
+            rospy.wait_for_service('/mavros/set_mode')
+            mode = 220 #auto mode = 220. Guided_Mode = 216
+            #mode = MAV_MODE(mode)
+            mode_set = rospy.ServiceProxy('/mavros/set_mode', SetMode)
+            resp = mode_set(0,'3')
+            rospy.loginfo("SETTING TO AUTO: %s", resp)
+
             rospy.wait_for_service('/mavros/mission/push')
             waypoints = [home_offset, Waypoint(frame=Waypoint.FRAME_GLOBAL_REL_ALT,
                             command=Waypoint.NAV_WAYPOINT,
-                            is_current=True,
-                            x_lat=x_loc, y_long= y_loc, z_alt=6)
+                            is_current=True,autocontinue=True,
+                            x_lat=lat_cor, y_long=long_cor, z_alt=6)
                         ]
-            waypoint_push = rospy.ServiceProxy('/mavros/mission/push', WaypointPush)
-            resp = waypoint_push(waypoints)
+            #waypoint = Waypoint(frame=Waypoint.FRAME_GLOBAL_REL_ALT,
+            #                command=Waypoint.NAV_WAYPOINT,
+            #                is_current=True,
+            #                x_lat=lat_cor, y_long= long_cor, z_alt=6)
+
+            waypoint_goto = rospy.ServiceProxy('/mavros/mission/push', WaypointPush)
+            resp = waypoint_goto(waypoints)
             #rospy.loginfo(resp)
             #rospy.loginfo("Sent Waypoints: %s", resp)
             old_time = time.time()
@@ -129,9 +163,6 @@ def run(fires_toa, fires_fli, trial_directory):
         while loop_time <= config.DEADLINE:
             loop_time = time.time() - loop_start_time
         pygame.display.flip()
-
-
-
 
 
 def gps_init():
